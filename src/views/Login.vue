@@ -43,7 +43,11 @@
       </el-form>
       
       <div class="demo-account">
-        <p>演示账号：admin / 123456</p>
+        <p class="demo-title">测试账号：</p>
+        <p><el-tag size="small" type="success">管理员</el-tag> admin / 123456</p>
+        <p><el-tag size="small" type="primary">运营人员</el-tag> operator / 123456</p>
+        <p><el-tag size="small" type="warning">开发人员</el-tag> developer / 123456</p>
+        <p><el-tag size="small" type="info">观察员</el-tag> viewer / 123456</p>
       </div>
     </div>
   </div>
@@ -73,6 +77,14 @@ const rules = {
   ]
 }
 
+// 测试用户列表
+const users = [
+  { username: 'admin', password: '123456', role: 'admin', name: '管理员' },
+  { username: 'operator', password: '123456', role: 'operator', name: '运营人员' },
+  { username: 'developer', password: '123456', role: 'developer', name: '开发人员' },
+  { username: 'viewer', password: '123456', role: 'viewer', name: '观察员' }
+]
+
 const handleLogin = async () => {
   if (!formRef.value) return
   
@@ -80,11 +92,21 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       
-      // 模拟登录请求
+      // 查找用户
+      const user = users.find(u => 
+        u.username === form.value.username && 
+        u.password === form.value.password
+      )
+      
       setTimeout(() => {
-        if (form.value.username === 'admin' && form.value.password === '123456') {
-          localStorage.setItem('token', 'mock-token')
-          ElMessage.success('登录成功')
+        if (user) {
+          // 存储用户信息
+          localStorage.setItem('token', 'mock-token-' + Date.now())
+          localStorage.setItem('userRole', user.role)
+          localStorage.setItem('userName', user.name)
+          localStorage.setItem('username', user.username)
+          
+          ElMessage.success(`欢迎 ${user.name}`)
           router.push('/')
         } else {
           ElMessage.error('用户名或密码错误')
@@ -112,6 +134,7 @@ const handleLogin = async () => {
   backdrop-filter: blur(10px);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .login-title {
@@ -119,6 +142,7 @@ const handleLogin = async () => {
   color: #fff;
   font-size: 24px;
   margin-bottom: 30px;
+  font-weight: 600;
 }
 
 :deep(.el-input__wrapper) {
@@ -137,12 +161,33 @@ const handleLogin = async () => {
 
 .el-button {
   width: 100%;
+  height: 44px;
+  font-size: 16px;
 }
 
 .demo-account {
-  margin-top: 20px;
-  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: #8a9bb2;
   font-size: 14px;
+}
+
+.demo-title {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.demo-account p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:deep(.el-tag) {
+  min-width: 60px;
+  text-align: center;
 }
 </style>
