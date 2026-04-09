@@ -126,12 +126,12 @@ npm run dev
 ## 🙏 致谢
 
 ## 感谢以下开源项目：
-• Vue.js - 渐进式 JavaScript 框架
-• Element Plus - 优秀的 UI 组件库
-• ECharts - 强大的数据可视化库
-• Node.js - JavaScript 运行时
-• MySQL - 关系型数据库
-• ws - WebSocket 库
+• Vue.js - 渐进式 JavaScript 框架  
+• Element Plus - 优秀的 UI 组件库  
+• ECharts - 强大的数据可视化库  
+• Node.js - JavaScript    
+• MySQL - 关系型数据库  
+• ws - WebSocket 库  
 
 ## 📅 更新日志
 
