@@ -11,6 +11,18 @@ const pool = mysql.createPool({
     connectionLimit: 10
 }).promise()
 
+// 测试数据库连接
+async function testConnection() {
+    try {
+        const [result] = await pool.query('SELECT 1')
+        console.log('✅ 数据库连接成功')
+        return true
+    } catch (err) {
+        console.error('❌ 数据库连接失败:', err.message)
+        return false
+    }
+}
+
 async function saveMetrics(metrics) {
     const sql = `INSERT INTO game_metrics (online_players, revenue, active_servers, avg_latency) VALUES (?, ?, ?, ?)`
     const [result] = await pool.execute(sql, [
@@ -66,7 +78,13 @@ async function getAlerts(limit = 100) {
 }
 
 module.exports = {
-    saveMetrics, getLatestMetrics, getHistoryMetrics,
-    getAllServers, saveServerStatus,
-    saveAlert, getAlerts
+    pool,
+    testConnection,        
+    saveMetrics,
+    getLatestMetrics,
+    getHistoryMetrics,
+    getAllServers,
+    saveServerStatus,
+    saveAlert,
+    getAlerts
 }

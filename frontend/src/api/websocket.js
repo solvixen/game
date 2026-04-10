@@ -19,7 +19,13 @@ class WebSocketService {
 
         this.socket.onmessage = (event) => {
             try {
-                const { type, payload, servers } = JSON.parse(event.data)
+                const receivedData = JSON.parse(event.data)
+                const { type, payload, servers } = receivedData
+                if (type === 'ping') {
+                    this.socket.send(JSON.stringify({ type: 'pong' }))
+                    return
+                 }
+                
                 if (type === 'gameData' && this.handlers.has('gameData')) {
                     this.handlers.get('gameData').forEach(cb => cb(payload, servers))
                 }
@@ -50,7 +56,10 @@ class WebSocketService {
 
     disconnect() {
         if (this.reconnectTimer) clearTimeout(this.reconnectTimer)
-        if (this.socket) { this.socket.close(); this.socket = null }
+        if (this.socket) {
+            this.socket.close()
+            this.socket = null
+        }
     }
 }
 

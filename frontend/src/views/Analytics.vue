@@ -6,10 +6,10 @@
     <div class="action-bar">
       <div class="left">
         <el-radio-group v-model="timeRange" size="large" @change="handleTimeRangeChange">
-          <el-radio-button label="today">今日</el-radio-button>
-          <el-radio-button label="week">本周</el-radio-button>
-          <el-radio-button label="month">本月</el-radio-button>
-          <el-radio-button label="quarter">本季度</el-radio-button>
+          <el-radio-button value="today">今日</el-radio-button>
+          <el-radio-button value="week">本周</el-radio-button>
+          <el-radio-button value="month">本月</el-radio-button>
+          <el-radio-button value="quarter">本季度</el-radio-button>
         </el-radio-group>
         
         <el-date-picker

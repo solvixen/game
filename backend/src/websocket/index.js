@@ -29,6 +29,19 @@ function start() {
 
     wss.on('connection', (ws) => {
         console.log('✅ 客户端已连接')
+        let isAlive = true
+    ws.on('pong', () => {
+        isAlive = true
+    })
+    
+    const heartbeatInterval = setInterval(() => {
+        if (isAlive === false) {
+            console.log('客户端心跳超时，断开连接')
+            return ws.terminate()
+        }
+        isAlive = false
+        ws.ping()
+    }, 30000)
         
         const interval = setInterval(async () => {
             const metrics = generateMockData()

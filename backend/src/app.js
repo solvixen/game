@@ -18,6 +18,9 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().
 // 启动 WebSocket
 const wsServer = require('./websocket')
 wsServer.start()
+// 启动数据可
+const db = require('./models/db')
+db.testConnection()
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {

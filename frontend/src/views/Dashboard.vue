@@ -53,7 +53,7 @@
       <GaugeChart 
         title="服务器负载" 
         :value="avgCpuLoad"
-        max="100"
+        :max="100"
         unit="%"
       />
     </div>
