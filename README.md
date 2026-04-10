@@ -141,6 +141,6 @@ npm run dev
 **v4**: 添加智能告警系统  
 **v5**: 支持多角色权限管理  
 **v6**: 集成 MySQL 数据库存储  
-**v7**: 支持数据导出（Excel/CSV/PDF） 
-**v8**: WebSocket 断线重连机制  
+**v7**: 支持数据导出（Excel/CSV/PDF）  
+**v8**: WebSocket 断线重连机制   
 **v9**: 历史数据趋势分析  
