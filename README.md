@@ -30,6 +30,17 @@
 - **多角色权限**：管理员、运营人员、开发人员、观察员
 - **按钮级控制**：不同角色看到不同的操作按钮
 - **路由权限**：不同角色可访问的页面不同
+  
+### 6. 数据持久化模块
+- **MySQL 数据库存储**：游戏指标历史、服务器状态、告警记录
+- **历史数据查询**：支持按时间范围查询历史趋势
+- **数据备份**：支持导出历史数据
+  
+  ### 7. WebSocket 实时通信
+- **双向通信**：后端主动推送数据到前端
+- **断线重连**：自动检测连接状态，5秒后自动重连
+- **心跳检测**：保持连接活跃
+  
 
 ## 🛠️ 技术栈
 
@@ -45,24 +56,56 @@
 | **构建工具** | Vite | 极速冷启动和热更新 |
 | **日期处理** | Day.js | 轻量级日期处理库 |
 | **导出工具** | XLSX + jspdf | 支持 Excel、CSV、PDF 导出 |
+| **后端框架** | Node.js + Express | RESTful API 服务 |
+| **数据库** | MySQL 8.0 | 数据持久化存储 |
+| **WebSocket 服务** | ws 库 | 原生 WebSocket 实现 |
 
 ## 🚀 快速开始
 
 ## 环境要求
 **• Node.js 18+**  
 **• npm 8+ 或 yarn 1.22+**
+*• MySQL 8.0+**
 
 ## 安装步骤
+### 1. 实时监控模块
 ```bash
+# 进入数据库目录
+cd database
+
+# 执行 SQL 脚本
+mysql -u root -p < init.sql
+```
+### 2. 启动后端服务
+```bash
+# 进入后端目录
+cd backend
+
 # 安装依赖
 npm install
 
-# 启动开发服务器
-npm run dev
-
-# 构建生产版本
-npm run build
+# 启动后端
+npm start
 ```
+### 启动成功后会看到：
+```bash
+🚀 HTTP 服务启动: http://localhost:3001
+🔌 WebSocket 服务启动: ws://localhost:3002
+✅ 数据库连接成功
+```
+### 3. 启动前端服务
+```bash
+# 进入前端目录（新终端）
+cd frontend
+
+# 安装依赖
+npm install
+
+# 启动前端
+npm run dev
+```
+### 4. 访问系统
+开浏览器访问：http://localhost:8080
 
 ## 🔑 测试账号
 
@@ -86,15 +129,18 @@ npm run build
 • Vue.js - 渐进式 JavaScript 框架  
 • Element Plus - 优秀的 UI 组件库  
 • ECharts - 强大的数据可视化库  
+• Node.js - JavaScript    
+• MySQL - 关系型数据库  
+• ws - WebSocket 库  
 
 ## 📅 更新日志
 
 **v1**:首次发布  
-**v2**：完成模拟测试数据  
-**v3**:完成各个模块的显示
-
-
-
-
-
-
+**v2**：实现实时监控功能（WebSocket 3秒推送)  
+**v3**: 完成数据可视化模块（ECharts 图表)  
+**v4**: 添加智能告警系统  
+**v5**: 支持多角色权限管理  
+**v6**: 集成 MySQL 数据库存储  
+**v7**: 支持数据导出（Excel/CSV/PDF）  
+**v8**: WebSocket 断线重连机制   
+**v9**: 历史数据趋势分析  
