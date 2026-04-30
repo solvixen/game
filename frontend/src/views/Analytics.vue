@@ -202,30 +202,65 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Download, Refresh, ArrowDown } from '@element-plus/icons-vue'
+import { Download, Refresh } from '@element-plus/icons-vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import LineChart from '@/components/charts/LineChart.vue'
+import httpClient from '@/api/httpClient'
 import { exportData, formatForExport } from '@/utils/export'
-import * as mockData from '@/api/services/mockData'
 
 // ==================== 状态变量 ====================
 const loading = ref(false)
 const timeRange = ref('week')
 const customRange = ref([])
-const tableRef = ref(null)
 const selectedRows = ref([])
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(100)
+const total = ref(0)
+const tableData = ref([])              // 表格数据（真实）
+const chartData = ref({ labels: [], dauData: [], revenueData: [] }) // 原始图表数据
 
-// 导出相关
-const exportDialogVisible = ref(false)
-const exportFormat = ref('excel')
-const exportType = ref('all') // 'all' 或 'selected'
-const exportTimeRange = ref('current')
-const exportColumns = ref(['date', 'dau', 'mau', 'newUsers', 'revenue', 'avgDuration', 'payRate'])
+// 关键指标（从表格数据计算，若表格为空则显示默认值）
+const stats = computed(() => {
+  if (tableData.value.length === 0) {
+    return [
+      { title: 'DAU', value: '0', change: 0 },
+      { title: 'MAU', value: '0', change: 0 },
+      { title: 'ARPU', value: '¥0', change: 0 },
+      { title: '付费率', value: '0%', change: 0 }
+    ]
+  }
+  const avgDau = Math.round(tableData.value.reduce((sum, d) => sum + d.dau, 0) / tableData.value.length)
+  const avgMau = Math.round(tableData.value.reduce((sum, d) => sum + d.mau, 0) / tableData.value.length)
+  const totalRevenue = tableData.value.reduce((sum, d) => sum + d.revenue, 0)
+  const arpu = totalRevenue / (tableData.value.length * (avgDau || 1))  // 粗略ARPU
+  const avgPayRate = tableData.value.reduce((sum, d) => sum + d.payRate, 0) / tableData.value.length
+  return [
+    { title: 'DAU', value: avgDau.toLocaleString(), change: 0 },
+    { title: 'MAU', value: avgMau.toLocaleString(), change: 0 },
+    { title: 'ARPU', value: `¥${arpu.toFixed(1)}`, change: 0 },
+    { title: '付费率', value: `${avgPayRate.toFixed(1)}%`, change: 0 }
+  ]
+})
+
+// 折线图数据：DAU 趋势
+const dauData = computed(() => ({
+  labels: chartData.value.labels,
+  datasets: [{ name: 'DAU', data: chartData.value.dauData }]
+}))
+
+// 收入趋势图数据
+const revenueData = computed(() => ({
+  labels: chartData.value.labels,
+  datasets: [{ name: '收入', data: chartData.value.revenueData }]
+}))
+
+// 留存率数据（暂时保留模拟，因为数据库无留存率）
+const retentionData = ref({
+  labels: ['次日', '3日', '7日', '14日', '30日'],
+  datasets: [{ name: '留存率', data: [45, 32, 23, 18, 12] }]
+})
 
 // 所有可导出的列
 const allColumns = [
@@ -238,92 +273,12 @@ const allColumns = [
   { label: '付费率(%)', prop: 'payRate' }
 ]
 
-// ==================== 模拟数据 ====================
-const stats = ref([
-  { title: 'DAU', value: '12,345', change: 8.5 },
-  { title: 'MAU', value: '45,678', change: 12.3 },
-  { title: 'ARPU', value: '¥25.6', change: 5.2 },
-  { title: '付费率', value: '15.8%', change: -2.1 }
-])
-
-// 图表数据
-const dauData = computed(() => ({
-  labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-  datasets: [{
-    name: 'DAU',
-    data: [12345, 13456, 14567, 15678, 16789, 17890, 18901]
-  }]
-}))
-
-const revenueData = computed(() => ({
-  labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-  datasets: [{
-    name: '收入',
-    data: [34567, 37890, 41234, 44567, 47890, 51234, 54567]
-  }]
-}))
-
-const retentionData = computed(() => ({
-  labels: ['次日', '3日', '7日', '14日', '30日'],
-  datasets: [{
-    name: '留存率',
-    data: [45, 32, 23, 18, 12]
-  }]
-}))
-
-// 表格数据
-const tableData = ref([
-  { 
-    id: 1,
-    date: '2026-03-18', 
-    dau: 12345, 
-    mau: 45678, 
-    newUsers: 1234, 
-    revenue: 34567, 
-    avgDuration: 45,
-    payRate: 12.5
-  },
-  { 
-    id: 2,
-    date: '2026-03-17', 
-    dau: 13456, 
-    mau: 46789, 
-    newUsers: 1345, 
-    revenue: 37890, 
-    avgDuration: 47,
-    payRate: 13.2
-  },
-  { 
-    id: 3,
-    date: '2026-03-16', 
-    dau: 14567, 
-    mau: 47890, 
-    newUsers: 1456, 
-    revenue: 41234, 
-    avgDuration: 48,
-    payRate: 14.1
-  },
-  { 
-    id: 4,
-    date: '2026-03-15', 
-    dau: 15678, 
-    mau: 48901, 
-    newUsers: 1567, 
-    revenue: 44567, 
-    avgDuration: 52,
-    payRate: 15.3
-  },
-  { 
-    id: 5,
-    date: '2026-03-14', 
-    dau: 16789, 
-    mau: 49912, 
-    newUsers: 1678, 
-    revenue: 47890, 
-    avgDuration: 55,
-    payRate: 16.8
-  }
-])
+// 导出相关
+const exportDialogVisible = ref(false)
+const exportFormat = ref('excel')
+const exportType = ref('all')
+const exportTimeRange = ref('current')
+const exportColumns = ref(['date', 'dau', 'mau', 'newUsers', 'revenue', 'avgDuration', 'payRate'])
 
 // ==================== 格式化函数 ====================
 const formatNumber = (num) => {
@@ -331,7 +286,6 @@ const formatNumber = (num) => {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
-// 导出格式化器
 const exportFormatters = {
   dau: (val) => formatNumber(val),
   mau: (val) => formatNumber(val),
@@ -340,67 +294,54 @@ const exportFormatters = {
   payRate: (val) => `${val}%`
 }
 
-// ==================== 导出功能 ====================
-
-/**
- * 处理导出按钮点击
- */
-const handleExport = (format) => {
-  exportFormat.value = format
-  exportType.value = 'all'
-  exportDialogVisible.value = true
+// ==================== 获取表格数据（真实） ====================
+const fetchTableData = async () => {
+  loading.value = true
+  try {
+    const res = await httpClient.get('/analytics/table?days=30')
+    const allData = res || []
+    total.value = allData.length
+    const start = (currentPage.value - 1) * pageSize.value
+    const end = start + pageSize.value
+    tableData.value = allData.slice(start, end)
+  } catch (err) {
+    console.error('获取表格数据失败:', err)
+    ElMessage.error('加载表格数据失败')
+  } finally {
+    loading.value = false
+  }
 }
 
-/**
- * 导出选中数据
- */
-const exportSelected = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请先选择要导出的数据')
-    return
+// ==================== 获取图表数据（真实） ====================
+const fetchChartData = async (days = 7) => {
+  try {
+    const res = await httpClient.get(`/metrics/trend?days=${days}`)
+    chartData.value = res
+  } catch (err) {
+    console.error('获取趋势数据失败:', err)
   }
-  
-  exportType.value = 'selected'
-  exportDialogVisible.value = true
 }
 
-/**
- * 确认导出
- */
-const confirmExport = () => {
-  // 确定要导出的数据
-  let dataToExport = []
-  
-  if (exportType.value === 'selected') {
-    dataToExport = selectedRows.value
-  } else {
-    if (exportTimeRange.value === 'current') {
-      dataToExport = tableData.value
-    } else {
-      // 全部数据（模拟）
-      dataToExport = tableData.value
-      ElMessage.info('实际项目中会导出全部数据')
-    }
-  }
-  
-  // 筛选要导出的列
-  const selectedColumns = allColumns.filter(col => 
-    exportColumns.value.includes(col.prop)
-  )
-  
-  // 格式化数据
-  const formattedData = formatForExport(dataToExport, exportFormatters)
-  
-  // 导出
-  exportData(
-    formattedData,
-    `游戏数据报表_${timeRange.value}`,
-    selectedColumns,
-    exportFormat.value,
-    '游戏运营数据报表'
-  )
-  
-  exportDialogVisible.value = false
+// ==================== 刷新所有数据 ====================
+const refreshData = () => {
+  fetchTableData()
+  const days = timeRange.value === 'week' ? 7 : timeRange.value === 'month' ? 30 : 7
+  fetchChartData(days)
+  ElMessage.success('数据已刷新')
+}
+
+// ==================== 时间范围切换 ====================
+const handleTimeRangeChange = (val) => {
+  let days = 7
+  if (val === 'today') days = 1
+  if (val === 'week') days = 7
+  if (val === 'month') days = 30
+  if (val === 'quarter') days = 90
+  fetchChartData(days)
+}
+
+const handleCustomRangeChange = (val) => {
+  console.log('自定义范围:', val)
 }
 
 // ==================== 表格操作 ====================
@@ -410,21 +351,17 @@ const handleSelectionChange = (val) => {
 
 const deleteSelected = () => {
   if (selectedRows.value.length === 0) return
-  
-  ElMessageBox.confirm(
-    `确定删除选中的 ${selectedRows.value.length} 条数据吗？`, 
-    '警告', 
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    // 删除逻辑
+  ElMessageBox.confirm(`确定删除选中的 ${selectedRows.value.length} 条数据吗？`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // 仅为前端演示，实际应调用后端删除接口
     const ids = selectedRows.value.map(item => item.id)
     tableData.value = tableData.value.filter(item => !ids.includes(item.id))
     selectedRows.value = []
-    ElMessage.success('删除成功')
+    ElMessage.success('删除成功（演示）')
+    fetchTableData()
   }).catch(() => {})
 }
 
@@ -432,39 +369,61 @@ const viewDetail = (row) => {
   ElMessage.info(`查看详情: ${row.date}`)
 }
 
-// ==================== 其他方法 ====================
-const handleTimeRangeChange = (val) => {
-  console.log('时间范围变化:', val)
-  // 重新加载数据
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
-}
-
-const handleCustomRangeChange = (val) => {
-  console.log('自定义范围:', val)
-}
-
-const refreshData = () => {
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-    ElMessage.success('数据已刷新')
-  }, 500)
-}
-
 const handleSizeChange = (val) => {
-  console.log('每页条数变化:', val)
+  pageSize.value = val
+  currentPage.value = 1
+  fetchTableData()
 }
 
 const handleCurrentChange = (val) => {
-  console.log('当前页变化:', val)
+  currentPage.value = val
+  fetchTableData()
 }
 
+// ==================== 导出功能 ====================
+const handleExport = (format) => {
+  exportFormat.value = format
+  exportType.value = 'all'
+  exportDialogVisible.value = true
+}
+
+const exportSelected = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请先选择要导出的数据')
+    return
+  }
+  exportType.value = 'selected'
+  exportDialogVisible.value = true
+}
+
+const confirmExport = () => {
+  let dataToExport = []
+  if (exportType.value === 'selected') {
+    dataToExport = selectedRows.value
+  } else {
+    dataToExport = tableData.value
+  }
+  const selectedColumns = allColumns.filter(col => exportColumns.value.includes(col.prop))
+  const formattedData = formatForExport(dataToExport, exportFormatters)
+  exportData(
+    formattedData,
+    `游戏数据报表_${timeRange.value}`,
+    selectedColumns,
+    exportFormat.value,
+    '游戏运营数据报表'
+  )
+  exportDialogVisible.value = false
+}
+
+// ==================== 生命周期 ====================
 onMounted(() => {
-  // 初始化数据
-  console.log('Analytics页面已加载')
+  fetchTableData()
+  fetchChartData(7)
+})
+
+// 分页变化重新加载表格
+watch([currentPage, pageSize], () => {
+  fetchTableData()
 })
 </script>
 

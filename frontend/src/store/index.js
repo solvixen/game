@@ -24,21 +24,20 @@ export const useGameDataStore = defineStore('gameData', () => {
   const initWebSocket = () => {
     api.websocket.connect()
     
-    api.websocket.on('gameData', (data) => {
-      onlinePlayers.value = data.onlinePlayers || onlinePlayers.value
-      revenue.value = data.revenue || revenue.value
-      
-      // 保存历史数据
-      historyData.value.push({
-        time: Date.now(),
-        players: onlinePlayers.value,
-        revenue: revenue.value
-      })
-      
-      if (historyData.value.length > 100) {
-        historyData.value.shift()
-      }
-    })
+    api.websocket.on('gameData', (payload, serverList) => {
+    if (payload) {
+        onlinePlayers.value = payload.onlinePlayers || onlinePlayers.value;
+        revenue.value = payload.revenue || revenue.value;
+        // 保存历史数据
+        historyData.value.push({
+            time: Date.now(),
+            players: onlinePlayers.value,
+            revenue: revenue.value
+        });
+        if (historyData.value.length > 100) historyData.value.shift();
+    }
+    if (serverList) servers.value = serverList;
+});
     
     api.websocket.on('alert', (alert) => {
       alerts.value.unshift({

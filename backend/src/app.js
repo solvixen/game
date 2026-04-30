@@ -11,6 +11,7 @@ app.use('/api/metrics', require('./routes/metrics'))
 app.use('/api/servers', require('./routes/servers'))
 app.use('/api/alerts', require('./routes/alerts'))
 app.use('/api/dashboard', require('./routes/dashboard'))
+app.use('/api/analytics', require('./routes/analytics'))
 
 // 健康检查
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))

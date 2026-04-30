@@ -18,4 +18,14 @@ router.get('/stats', async (req, res) => {
     })
 })
 
+router.get('/', async (req, res) => {
+    try {
+        const servers = await db.getAllServers();
+        res.json(servers);
+    } catch (err) {
+        console.error('查询服务器列表失败:', err);
+        res.status(500).json({ error: '服务器内部错误' });
+    }
+});
+
 module.exports = router

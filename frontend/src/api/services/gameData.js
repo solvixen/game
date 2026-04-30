@@ -5,7 +5,7 @@ export const getGameMetrics = () => {
 }
 
 export const getServerStatus = () => {
-  return httpClient.get('/servers/status')
+  return httpClient.get('/servers')
 }
 
 export const getPlayerStats = () => {
