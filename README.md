@@ -67,6 +67,8 @@
 **• npm 8+ 或 yarn 1.22+**
 *• MySQL 8.0+**
 
+
+## 一、本地部署
 ## 安装步骤
 ### 1. 实时监控模块
 ```bash
@@ -106,6 +108,19 @@ npm run dev
 ```
 ### 4. 访问系统
 开浏览器访问：http://localhost:8080
+
+## 二、docker部署
+```bash
+# 启动所有服务（使用环境变量）
+docker-compose up -d
+
+# 查看某服务环境变量
+docker exec game-monitor-backend env
+
+# 停止并删除容器（保留数据卷）
+docker-compose down
+```
+
 
 ## 🔑 测试账号
 
