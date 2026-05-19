@@ -8,7 +8,7 @@ router.get('/overview', async (req, res) => {
         db.getAllServers()
     ])
     res.json({
-        metrics: metrics || { onlinePlayers: 0, revenue: 0, activeServers: 0, avgLatency: 0 },
+        metrics: metrics || { onlinePlayers: 0, revenue: 0, activeServers: 0, latency: 0 },
         servers: { total: servers.length, online: servers.filter(s => s.status === 'online').length }
     })
 })

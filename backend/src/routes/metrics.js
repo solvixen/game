@@ -6,7 +6,7 @@ const db = require('../models/db');
 router.get('/latest', async (req, res) => {
     try {
         const metrics = await db.getLatestMetrics();
-        res.json(metrics || { onlinePlayers: 0, revenue: 0, activeServers: 0, avgLatency: 0 });
+        res.json(metrics || { onlinePlayers: 0, revenue: 0, activeServers: 0, latency: 0 });
     } catch (err) {
         console.error('获取最新指标失败:', err);
         res.status(500).json({ error: '服务器内部错误' });

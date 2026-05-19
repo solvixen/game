@@ -22,6 +22,7 @@
         :value="metrics.onlinePlayers || 0" 
         trend="up"
         subtitle="当前在线人数"
+        theme="blue"
       />
       <StatsCard 
         title="今日收入" 
@@ -29,18 +30,21 @@
         format="currency"
         trend="up"
         subtitle="截至现在"
+        theme="gold"
       />
       <StatsCard 
         title="活跃服务器" 
         :value="activeServersCount" 
         subtitle="当前在线服务器"
+        theme="green"
       />
       <StatsCard 
         title="平均延迟" 
-        :value="metrics.avgLatency || 0" 
+        :value="metrics.latency || 0" 
         trend="down"
         subtitle="实时延迟"
         unit="ms"
+        theme="orange"
       />
     </div>
 
@@ -82,7 +86,7 @@ import AlertCard from '@/components/dashboard/AlertCard.vue'
 const router = useRouter()
 
 // ==================== 数据状态 ====================
-const metrics = ref({ onlinePlayers: 0, revenue: 0, activeServers: 0, avgLatency: 0 })
+const metrics = ref({ onlinePlayers: 0, revenue: 0, activeServers: 0, latency: 0 })
 const servers = ref([])
 const alerts = ref([])
 const trendData = ref({ labels: [], dauData: [], revenueData: [] })
@@ -117,9 +121,19 @@ const loadInitialData = async () => {
             httpClient.get('/metrics/trend?days=7'),
             httpClient.get('/servers')
         ])
-        metrics.value = overview.metrics || { onlinePlayers: 0, revenue: 0, activeServers: 0, avgLatency: 0 }
+        metrics.value = overview.metrics || { onlinePlayers: 0, revenue: 0, activeServers: 0, latency: 0 }
         servers.value = serverList || []
-        trendData.value = trend || { labels: [], dauData: [], revenueData: [] }
+        // 将后端 { labels, dauData, revenueData } 转为 LineChart 期望的 { labels, datasets }
+        if (trend && trend.labels) {
+          trendData.value = {
+            labels: trend.labels,
+            datasets: [
+              { name: '在线玩家', data: trend.dauData || [] }
+            ]
+          }
+        } else {
+          trendData.value = { labels: [], datasets: [] }
+        }
     } catch (error) {
         console.error('加载数据失败:', error)
         ElMessage.error('数据加载失败')
@@ -176,7 +190,7 @@ onMounted(() => {
 onUnmounted(() => {
     websocket.off('gameData', handleGameData)
     websocket.off('alert', handleAlert)
-    websocket.disconnect()
+    // 不断开全局 WebSocket，其他页面仍需使用
 })
 </script>
 

@@ -12,7 +12,6 @@ export const useGameDataStore = defineStore('gameData', () => {
   const historyData = ref([])
 
   // getters
-  const totalPlayers = computed(() => onlinePlayers.value)
   const activeServers = computed(() => 
     servers.value.filter(s => s.status === 'online').length
   )
@@ -21,37 +20,6 @@ export const useGameDataStore = defineStore('gameData', () => {
   )
 
   // actions
-  const initWebSocket = () => {
-    api.websocket.connect()
-    
-    api.websocket.on('gameData', (payload, serverList) => {
-    if (payload) {
-        onlinePlayers.value = payload.onlinePlayers || onlinePlayers.value;
-        revenue.value = payload.revenue || revenue.value;
-        // 保存历史数据
-        historyData.value.push({
-            time: Date.now(),
-            players: onlinePlayers.value,
-            revenue: revenue.value
-        });
-        if (historyData.value.length > 100) historyData.value.shift();
-    }
-    if (serverList) servers.value = serverList;
-});
-    
-    api.websocket.on('alert', (alert) => {
-      alerts.value.unshift({
-        id: Date.now(),
-        ...alert,
-        time: Date.now()
-      })
-      
-      if (alerts.value.length > 50) {
-        alerts.value.pop()
-      }
-    })
-  }
-
   const fetchServerStatus = async () => {
     loading.value = true
     try {
@@ -76,11 +44,9 @@ export const useGameDataStore = defineStore('gameData', () => {
     loading,
     historyData,
     // getters
-    totalPlayers,
     activeServers,
     criticalAlerts,
     // actions
-    initWebSocket,
     fetchServerStatus,
     clearAlerts
   }

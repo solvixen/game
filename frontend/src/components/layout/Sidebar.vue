@@ -132,8 +132,8 @@ onUnmounted(() => {
   top: 0;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
   z-index: 1000;
 }
 
@@ -150,6 +150,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: all 0.3s;
 }
 
 .logo h2 {
@@ -159,7 +160,7 @@ onUnmounted(() => {
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  transition: opacity 0.2s;
 }
 
 .version {
@@ -169,6 +170,15 @@ onUnmounted(() => {
   padding: 2px 6px;
   border-radius: 10px;
   white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.sidebar.collapsed .version {
+  opacity: 0;
+  width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 /* 菜单样式 */
@@ -182,27 +192,85 @@ onUnmounted(() => {
   height: 50px;
   line-height: 50px;
   margin: 4px 8px;
-  border-radius: 8px;
-  transition: all 0.3s;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-menu :deep(.el-menu-item::before) {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(116, 185, 255, 0.15) 0%, transparent 100%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
+}
+
+.sidebar-menu :deep(.el-menu-item:hover::before) {
+  width: 100%;
 }
 
 .sidebar-menu :deep(.el-menu-item:hover) {
-  background: rgba(116, 185, 255, 0.1) !important;
+  background: transparent !important;
+  color: #fff;
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active) {
-  background: linear-gradient(90deg, rgba(116, 185, 255, 0.2) 0%, transparent 100%);
-  border-left: 3px solid #74b9ff;
+  background: linear-gradient(90deg, rgba(116, 185, 255, 0.2) 0%, transparent 100%) !important;
+  color: #74b9ff;
+}
+
+.sidebar-menu :deep(.el-menu-item.is-active::before) {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(116, 185, 255, 0.1) 0%, transparent 100%);
+}
+
+.sidebar-menu :deep(.el-menu-item.is-active::after) {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background: #74b9ff;
+  border-radius: 0 3px 3px 0;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  to { 
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }
 
 .sidebar-menu :deep(.el-menu-item .el-icon) {
   font-size: 18px;
   margin-right: 12px;
+  transition: transform 0.3s;
+}
+
+.sidebar-menu :deep(.el-menu-item:hover .el-icon) {
+  transform: scale(1.15);
+}
+
+.sidebar-menu :deep(.el-menu-item span) {
+  transition: opacity 0.2s;
 }
 
 /* 折叠状态下的菜单 */
 .sidebar.collapsed .sidebar-menu :deep(.el-menu-item span) {
-  display: none;
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
 }
 
 .sidebar.collapsed .sidebar-menu :deep(.el-menu-item .el-icon) {
@@ -213,10 +281,16 @@ onUnmounted(() => {
 .badge {
   margin-left: auto;
   margin-right: 8px;
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 :deep(.el-badge__content) {
-  background: #00b894;
+  background: linear-gradient(135deg, #00b894, #00cec9);
   border: none;
   color: #fff;
   font-size: 10px;
@@ -233,45 +307,62 @@ onUnmounted(() => {
 .sidebar-footer {
   padding: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s;
 }
 
 .collapse-btn {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 32px;
-  width: 32px;
+  height: 34px;
+  width: 34px;
   margin: 0 auto 12px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   cursor: pointer;
   color: #8a9bb2;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .collapse-btn:hover {
-  background: rgba(116, 185, 255, 0.1);
+  background: rgba(116, 185, 255, 0.15);
   color: #74b9ff;
+  transform: scale(1.08);
+}
+
+.collapse-btn:active {
+  transform: scale(0.95);
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px;
+  padding: 10px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+.user-info:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .user-avatar {
-  background: #74b9ff;
+  background: linear-gradient(135deg, #74b9ff, #a29bfe);
   color: #fff;
   font-weight: 600;
   flex-shrink: 0;
+  transition: transform 0.3s;
+}
+
+.user-info:hover .user-avatar {
+  transform: scale(1.05);
 }
 
 .user-details {
   overflow: hidden;
+  transition: opacity 0.2s;
 }
 
 .user-name {
@@ -285,39 +376,42 @@ onUnmounted(() => {
 
 .user-role {
   font-size: 11px;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 10px;
   display: inline-block;
-  margin-top: 2px;
+  margin-top: 3px;
+  transition: all 0.3s;
 }
 
 .user-role.admin {
-  background: rgba(225, 112, 85, 0.1);
+  background: rgba(225, 112, 85, 0.15);
   color: #e17055;
 }
 
 .user-role.operator {
-  background: rgba(0, 184, 148, 0.1);
+  background: rgba(0, 184, 148, 0.15);
   color: #00b894;
 }
 
 .user-role.developer {
-  background: rgba(253, 203, 110, 0.1);
+  background: rgba(253, 203, 110, 0.15);
   color: #fdcb6e;
 }
 
 .user-role.viewer {
-  background: rgba(138, 155, 178, 0.1);
+  background: rgba(138, 155, 178, 0.15);
   color: #8a9bb2;
 }
 
 /* 折叠状态下的底部 */
 .sidebar.collapsed .user-details {
-  display: none;
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
 }
 
 .sidebar.collapsed .user-info {
   justify-content: center;
-  padding: 8px 0;
+  padding: 10px 0;
 }
 </style>

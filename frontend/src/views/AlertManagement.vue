@@ -200,6 +200,66 @@ onMounted(() => {
   padding: 16px 20px;
   background: #16213e;
   border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 暗色表格样式 */
+:deep(.el-table) {
+  background: #16213e;
+  color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  background: #0f3460;
+  color: #fff;
+  font-weight: 500;
+}
+
+:deep(.el-table tr) {
+  background: #16213e;
+}
+
+:deep(.el-table td) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  background: #1a2a4a;
+}
+
+:deep(.el-table__body tr:hover > td) {
+  background: #1e3a5a !important;
+}
+
+:deep(.el-table__empty-text) {
+  color: #5a6a80;
+}
+
+:deep(.el-checkbox__inner) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 分页样式 */
+:deep(.el-pagination) {
+  color: #8a9bb2;
+}
+
+:deep(.el-pagination button) {
+  background: #16213e;
+  color: #8a9bb2;
+}
+
+:deep(.el-pager li) {
+  background: #16213e;
+  color: #8a9bb2;
+}
+
+:deep(.el-pager li.active) {
+  background: #74b9ff;
+  color: #fff;
 }
 
 .table-footer {
@@ -207,5 +267,44 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.table-footer .left {
+  display: flex;
+  align-items: center;
+}
+
+/* 按钮组暗色 */
+:deep(.el-button-group .el-button) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #8a9bb2;
+}
+
+:deep(.el-button-group .el-button:hover) {
+  color: #74b9ff;
+  border-color: rgba(116, 185, 255, 0.3);
+  background: rgba(116, 185, 255, 0.1);
+}
+
+/* 单选按钮组暗色 */
+:deep(.el-radio-button__inner) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #8a9bb2;
+}
+
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: rgba(116, 185, 255, 0.2);
+  border-color: #74b9ff;
+  color: #74b9ff;
+  box-shadow: -1px 0 0 0 #74b9ff;
+}
+
+@media (max-width: 768px) {
+  .action-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 </style>

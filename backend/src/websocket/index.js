@@ -7,9 +7,10 @@ let wss = null;
 function generateMockData() {
     return {
         onlinePlayers: Math.floor(Math.random() * 5000 + 1000),
+        newPlayers: Math.floor(Math.random() * 200 + 20),
         revenue: Math.floor(Math.random() * 50000 + 10000),
         activeServers: Math.floor(Math.random() * 5 + 3),
-        avgLatency: Math.floor(Math.random() * 150 + 30)
+        latency: Math.floor(Math.random() * 150 + 30)
     };
 }
 

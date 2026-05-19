@@ -4,6 +4,7 @@ class WebSocketService {
         this.handlers = new Map()
         this.reconnectTimer = null
         this.url = import.meta.env.VITE_APP_WS_URL
+        this._statusListeners = []
     }
 
 connect() {
@@ -15,6 +16,7 @@ connect() {
     this.socket.onopen = () => {
         console.log(`✅ WebSocket 连接成功: ${this.url}`);
         if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+        this._notifyStatus(true);
     };
 
     this.socket.onmessage = (event) => {
@@ -35,6 +37,7 @@ connect() {
 
     this.socket.onclose = () => {
         console.warn('WebSocket 断开，5秒后重连');
+        this._notifyStatus(false);
         this.reconnectTimer = setTimeout(() => this.connect(), 5000);
     };
 }
@@ -56,6 +59,21 @@ connect() {
             this.socket.close()
             this.socket = null
         }
+    }
+
+    _notifyStatus(connected) {
+        this._statusListeners.forEach(cb => cb(connected))
+    }
+
+    onStatus(callback) {
+        this._statusListeners.push(callback)
+        return () => {
+            this._statusListeners = this._statusListeners.filter(cb => cb !== callback)
+        }
+    }
+
+    get connected() {
+        return this.socket?.readyState === WebSocket.OPEN
     }
 }
 

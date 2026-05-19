@@ -12,7 +12,8 @@ const pool = mysql.createPool({
     connectionLimit: 10,
     queueLimit: 0,
     enableKeepAlive: true,
-    keepAliveInitialDelay: 0
+    keepAliveInitialDelay: 0,
+    decimalNumbers: true
 }).promise();
 
 // ==================== 测试连接 ====================
@@ -34,7 +35,7 @@ async function saveMetrics(metrics) {
         metrics.onlinePlayers || 0,
         metrics.revenue || 0,
         metrics.activeServers || 0,
-        metrics.avgLatency || 0
+        metrics.latency || 0
     ]);
     return result.insertId;
 }

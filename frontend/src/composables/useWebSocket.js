@@ -2,7 +2,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { api } from '@/api'
 
 export function useWebSocket(eventType, callback) {
-  const isConnected = ref(false)
+  const isConnected = ref(api.websocket.connected)
   const lastMessage = ref(null)
 
   const handleMessage = (data) => {
@@ -10,13 +10,20 @@ export function useWebSocket(eventType, callback) {
     if (callback) callback(data)
   }
 
+  let removeStatusListener = null
+
   onMounted(() => {
+    api.websocket.connect()
     api.websocket.on(eventType, handleMessage)
-    isConnected.value = true
+    // 监听真实连接状态
+    removeStatusListener = api.websocket.onStatus((connected) => {
+      isConnected.value = connected
+    })
   })
 
   onUnmounted(() => {
     api.websocket.off(eventType, handleMessage)
+    if (removeStatusListener) removeStatusListener()
   })
 
   return {

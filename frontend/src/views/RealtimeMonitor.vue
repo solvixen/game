@@ -12,7 +12,7 @@
     <div class="realtime-grid">
       <RealtimeChart 
         title="实时在线玩家"
-        :data-stream="() => Math.floor(Math.random() * 1000 + 3000)"
+        :data-stream="() => realtimeData.onlinePlayers"
         :max-points="60"
       />
       
