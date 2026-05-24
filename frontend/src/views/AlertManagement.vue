@@ -4,10 +4,19 @@
 
     <div class="action-bar">
       <div class="left">
-        <el-button-group>
-          <el-button :icon="Download" @click="showExportDialog = true">导出告警</el-button>
-          <el-button :icon="Refresh" @click="fetchAlerts">刷新</el-button>
-        </el-button-group>
+        <el-dropdown @command="handleExport" style="margin-right: 8px">
+          <el-button :icon="Download">
+            导出告警 <el-icon class="el-icon--right"><arrow-down /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="excel">📊 导出 Excel</el-dropdown-item>
+              <el-dropdown-item command="csv">📄 导出 CSV</el-dropdown-item>
+              <el-dropdown-item command="pdf">📑 导出 PDF</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-button :icon="Refresh" @click="fetchAlerts">刷新</el-button>
       </div>
       <div class="right">
         <el-radio-group v-model="filterLevel" size="small" @change="handleFilterChange">
@@ -74,7 +83,27 @@
       </div>
     </BaseCard>
 
-    <!-- 导出对话框略，与之前相同 -->
+    <!-- 导出选项对话框 -->
+    <el-dialog v-model="exportDialogVisible" title="导出选项" width="400px">
+      <el-form label-width="80px">
+        <el-form-item label="导出格式">
+          <el-radio-group v-model="exportFormat">
+            <el-radio value="excel">Excel</el-radio>
+            <el-radio value="csv">CSV</el-radio>
+            <el-radio value="pdf">PDF</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="导出列">
+          <el-checkbox-group v-model="exportColumns">
+            <el-checkbox v-for="col in allColumns" :key="col.prop" :value="col.prop">{{ col.label }}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="exportDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmExport">导出</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -84,6 +113,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Refresh } from '@element-plus/icons-vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import httpClient from '@/api/httpClient'
+import { exportData, formatForExport } from '@/utils/export'
 
 const loading = ref(false)
 const alertHistory = ref([])
@@ -121,13 +151,12 @@ const handleFilterChange = () => {
   fetchAlerts()
 }
 
-const handleSizeChange = (val) => {
-  pageSize.value = val
+const handleSizeChange = () => {
+  currentPage.value = 1
   fetchAlerts()
 }
 
-const handleCurrentChange = (val) => {
-  currentPage.value = val
+const handleCurrentChange = () => {
   fetchAlerts()
 }
 
@@ -172,6 +201,49 @@ const alertLevelType = (level) => {
 const alertLevelText = (level) => {
   const map = { critical: '紧急', warning: '警告', info: '信息' }
   return map[level] || level
+}
+
+// ==================== 导出功能 ====================
+const allColumns = [
+  { label: '时间', prop: 'create_time' },
+  { label: '级别', prop: 'level' },
+  { label: '告警类型', prop: 'type' },
+  { label: '告警内容', prop: 'message' },
+  { label: '当前值', prop: 'value' },
+  { label: '阈值', prop: 'threshold' },
+  { label: '状态', prop: 'status' }
+]
+
+const exportDialogVisible = ref(false)
+const exportFormat = ref('excel')
+const exportColumns = ref(['create_time', 'level', 'type', 'message', 'status'])
+
+const exportFormatters = {
+  level: (v) => ({ critical: '紧急', warning: '警告', info: '信息' }[v] || v),
+  status: (v) => (v === 'resolved' ? '已解决' : '未处理')
+}
+
+const handleExport = (format) => {
+  exportFormat.value = format
+  exportDialogVisible.value = true
+}
+
+const confirmExport = () => {
+  const dataToExport = alertHistory.value
+  if (!dataToExport.length) {
+    ElMessage.warning('没有数据可导出')
+    return
+  }
+  const selectedColumns = allColumns.filter(col => exportColumns.value.includes(col.prop))
+  const formattedData = formatForExport(dataToExport, exportFormatters)
+  exportData(
+    formattedData,
+    '告警数据报表',
+    selectedColumns,
+    exportFormat.value,
+    '告警数据报表'
+  )
+  exportDialogVisible.value = false
 }
 
 onMounted(() => {

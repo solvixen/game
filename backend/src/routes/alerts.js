@@ -25,20 +25,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 处理单个告警
-router.put('/:id/resolve', async (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        if (isNaN(id)) return res.status(400).json({ error: '无效ID' });
-        await db.resolveAlert(id);
-        res.json({ success: true });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// 批量处理
+// 批量处理（必须在 :id/resolve 前面，否则 batch 会被当成 :id 匹配）
 router.put('/batch/resolve', async (req, res) => {
     try {
         const { ids } = req.body;
@@ -46,6 +33,19 @@ router.put('/batch/resolve', async (req, res) => {
             return res.status(400).json({ error: '参数错误' });
         }
         await db.batchResolveAlerts(ids);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 处理单个告警
+router.put('/:id/resolve', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).json({ error: '无效ID' });
+        await db.resolveAlert(id);
         res.json({ success: true });
     } catch (err) {
         console.error(err);

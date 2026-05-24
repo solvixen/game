@@ -94,10 +94,13 @@ const realtimeData = ref({
   latency: 0
 })
 
-function handleNewData(data) {
+function handleNewData(payload, servers) {
   realtimeData.value = {
     ...realtimeData.value,
-    ...data
+    ...payload
+  }
+  if (servers) {
+    store.servers = servers
   }
 }
 

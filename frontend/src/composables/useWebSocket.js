@@ -5,9 +5,9 @@ export function useWebSocket(eventType, callback) {
   const isConnected = ref(api.websocket.connected)
   const lastMessage = ref(null)
 
-  const handleMessage = (data) => {
-    lastMessage.value = data
-    if (callback) callback(data)
+  const handleMessage = (payload, servers) => {
+    lastMessage.value = payload
+    if (callback) callback(payload, servers)
   }
 
   let removeStatusListener = null

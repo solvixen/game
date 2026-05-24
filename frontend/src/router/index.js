@@ -18,7 +18,7 @@ const routes = [
     meta: { 
       title: '实时监控',
       requiresAuth: true,
-      roles: ['admin', 'operator', 'developer', 'viewer']
+      roles: ['admin', 'operator', 'developer']
     }
   },
   {

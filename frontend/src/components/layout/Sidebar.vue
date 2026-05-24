@@ -14,27 +14,13 @@
       active-text-color="#74b9ff"
       router
     >
-      <el-menu-item index="/">
-        <el-icon><Monitor /></el-icon>
-        <span>仪表板</span>
-      </el-menu-item>
-      
-      <el-menu-item index="/realtime">
-        <el-icon><DataLine /></el-icon>
-        <span>实时监控</span>
-      </el-menu-item>
-      
-      <el-menu-item index="/analytics">
-        <el-icon><PieChart /></el-icon>
-        <span>数据分析</span>
-        <el-badge v-if="hasNewData" value="新" class="badge" />
-      </el-menu-item>
-      
-      <el-menu-item index="/alerts">
-        <el-icon><Warning /></el-icon>
-        <span>告警管理</span>
-        <el-badge :value="unreadAlerts" :hidden="unreadAlerts === 0" class="badge" />
-      </el-menu-item>
+      <template v-for="item in visibleMenuItems" :key="item.index">
+        <el-menu-item :index="item.index">
+          <el-icon><component :is="item.icon" /></el-icon>
+          <span>{{ item.title }}</span>
+          <el-badge v-if="item.badge !== undefined && item.badge !== 0" :value="item.badge" class="badge" />
+        </el-menu-item>
+      </template>
     </el-menu>
 
     <div class="sidebar-footer">
@@ -74,6 +60,26 @@ const hasNewData = ref(true)
 
 // 当前激活菜单
 const activeMenu = computed(() => route.path)
+
+// 全量菜单项（含角色权限）
+const allMenuItems = [
+  { index: '/',          title: '仪表板',   icon: Monitor,   roles: ['admin', 'operator', 'developer', 'viewer'] },
+  { index: '/realtime',  title: '实时监控', icon: DataLine,  roles: ['admin', 'operator', 'developer'] },
+  { index: '/analytics', title: '数据分析', icon: PieChart,  roles: ['admin', 'operator'] },
+  { index: '/alerts',    title: '告警管理', icon: Warning,   roles: ['admin', 'operator', 'developer'] },
+]
+
+// 根据角色过滤可见菜单
+const visibleMenuItems = computed(() => {
+  return allMenuItems
+    .filter(item => item.roles.includes(userRole.value))
+    .map(item => {
+      let badge = undefined
+      if (item.index === '/analytics' && hasNewData.value) badge = '新'
+      if (item.index === '/alerts') badge = unreadAlerts.value
+      return { ...item, badge }
+    })
+})
 
 // 用户信息
 const userName = computed(() => localStorage.getItem('userName') || '管理员')

@@ -202,7 +202,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Refresh } from '@element-plus/icons-vue'
 import BaseCard from '@/components/common/BaseCard.vue'
@@ -369,14 +369,12 @@ const viewDetail = (row) => {
   ElMessage.info(`查看详情: ${row.date}`)
 }
 
-const handleSizeChange = (val) => {
-  pageSize.value = val
+const handleSizeChange = () => {
   currentPage.value = 1
   fetchTableData()
 }
 
-const handleCurrentChange = (val) => {
-  currentPage.value = val
+const handleCurrentChange = () => {
   fetchTableData()
 }
 
@@ -419,11 +417,6 @@ const confirmExport = () => {
 onMounted(() => {
   fetchTableData()
   fetchChartData(7)
-})
-
-// 分页变化重新加载表格
-watch([currentPage, pageSize], () => {
-  fetchTableData()
 })
 </script>
 
