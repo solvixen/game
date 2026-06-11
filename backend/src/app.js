@@ -6,12 +6,18 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// 路由
+// ═══════ JWT 认证中间件 ═══════
+const { authMiddleware } = require('./middleware/auth')
+app.use(authMiddleware)
+
+// 路由（auth 在中间件白名单中，无需 token）
+app.use('/api/auth', require('./routes/auth'))
 app.use('/api/metrics', require('./routes/metrics'))
 app.use('/api/servers', require('./routes/servers'))
 app.use('/api/alerts', require('./routes/alerts'))
 app.use('/api/dashboard', require('./routes/dashboard'))
 app.use('/api/analytics', require('./routes/analytics'))
+app.use('/api/users', require('./routes/users'))
 
 // 健康检查
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))
@@ -19,7 +25,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().
 // 启动 WebSocket
 const wsServer = require('./websocket')
 wsServer.start()
-// 启动数据可
+// 启动数据库连接
 const db = require('./models/db')
 db.testConnection()
 

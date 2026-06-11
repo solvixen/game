@@ -4,9 +4,9 @@
 export const isValidIP = (ip) => {
   const pattern = /^(\d{1,3}\.){3}\d{1,3}$/
   if (!pattern.test(ip)) return false
-  
+
   const parts = ip.split('.')
-  return parts.every(part => {
+  return parts.every((part) => {
     const num = parseInt(part, 10)
     return num >= 0 && num <= 255
   })
@@ -54,12 +54,12 @@ export const isValidPhone = (phone) => {
  */
 export const checkPasswordStrength = (password) => {
   if (!password || password.length < 8) return 0
-  
+
   let score = 0
   if (/[a-z]/.test(password)) score++
   if (/[A-Z]/.test(password)) score++
   if (/[0-9]/.test(password)) score++
   if (/[^a-zA-Z0-9]/.test(password)) score++
-  
+
   return score
 }

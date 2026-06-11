@@ -12,12 +12,8 @@ export const useGameDataStore = defineStore('gameData', () => {
   const historyData = ref([])
 
   // getters
-  const activeServers = computed(() => 
-    servers.value.filter(s => s.status === 'online').length
-  )
-  const criticalAlerts = computed(() => 
-    alerts.value.filter(a => a.level === 'critical')
-  )
+  const activeServers = computed(() => servers.value.filter((s) => s.status === 'online').length)
+  const criticalAlerts = computed(() => alerts.value.filter((a) => a.level === 'critical'))
 
   // actions
   const fetchServerStatus = async () => {

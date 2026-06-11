@@ -1,4 +1,4 @@
-/* 全局样式文件 */
+/* 全局样式文件 — 黑白印刷风格 */
 * {
   margin: 0;
   padding: 0;
@@ -6,21 +6,21 @@
 }
 
 :root {
-  --primary-color: #74b9ff;
-  --success-color: #00b894;
-  --warning-color: #fdcb6e;
-  --danger-color: #e17055;
-  --info-color: #8a9bb2;
-  
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
-  --bg-tertiary: #0f3460;
-  
-  --text-primary: #fff;
-  --text-secondary: #8a9bb2;
-  --text-disabled: #4a4a6a;
-  
-  --border-color: rgba(255, 255, 255, 0.1);
+  --primary-color: #1a56db;
+  --success-color: #057a55;
+  --warning-color: #c27803;
+  --danger-color: #e02424;
+  --info-color: #4b5563;
+
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8edf2;
+
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-disabled: #9ca3af;
+
+  --border-color: #d1d5db;
 }
 
 body {
@@ -38,16 +38,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: #f0f0f0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--info-color);
+  background: #adb5bd;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
+  background: #6c757d;
 }
 
 /* 工具类 */
@@ -180,7 +180,6 @@ body {
   .container {
     padding: 0 10px;
   }
-  
   .hide-mobile {
     display: none;
   }

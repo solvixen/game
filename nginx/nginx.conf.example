@@ -1,0 +1,123 @@
+# ========== 游戏数据监控系统 — Nginx 负载均衡配置 ==========
+# 文件位置：将内容保存为 nginx.conf 或 /etc/nginx/conf.d/game-monitor.conf
+# 使用：nginx -t 验证 → nginx -s reload 重载
+# ==============================================================================
+
+# -------- 上游服务器池（HTTP API 负载均衡）--------
+upstream backend_api {
+    # 负载均衡策略：最少连接数（适合长处理请求）
+    least_conn;
+    # 如需轮询（默认）/ IP 哈希（保持会话）可改为：
+    # ip_hash;
+    server 127.0.0.1:3001 weight=5 max_fails=3 fail_timeout=30s;
+    # 多实例扩展示例（取消注释添加第二台后端）：
+    # server 127.0.0.1:3003 weight=3 max_fails=3 fail_timeout=30s;
+    # server 192.168.1.20:3001 weight=2 max_fails=3 fail_timeout=30s backup;
+}
+
+# -------- 上游 WebSocket 服务器池 --------
+upstream backend_ws {
+    # WebSocket 建议用 ip_hash 保持会话
+    ip_hash;
+    server 127.0.0.1:3002;
+    # server 127.0.0.1:3004;
+}
+
+# ===================== HTTP 服务 =====================
+server {
+    listen 80;
+    server_name localhost;  # 改为你的域名，如 monitor.example.com
+
+    # ---- 日志 ----
+    access_log /var/log/nginx/game-access.log combined buffer=32k flush=5s;
+    error_log  /var/log/nginx/game-error.log warn;
+
+    # ---- 文件上传大小限制（告警导出）----
+    client_max_body_size 50m;
+
+    # ============ 静态资源（前端打包文件）============
+    # 前端 build 后放到 D:/game-monitor-system/frontend-dist/
+    location / {
+        root   D:/game-monitor-system/frontend-dist;  # Linux: /var/www/game-monitor/dist
+        index  index.html;
+        try_files $uri $uri/ /index.html;  # SPA 路由回退
+
+        # 静态资源缓存 30 天
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+            expires 30d;
+            add_header Cache-Control "public, immutable";
+            access_log off;
+        }
+    }
+
+    # ============ HTTP API 反向代理（负载均衡）============
+    location /api/ {
+        proxy_pass http://backend_api/api/;
+
+        # 超时控制（对标 ≤150ms 延迟要求）
+        proxy_connect_timeout 5s;
+        proxy_send_timeout    150s;
+        proxy_read_timeout    150s;
+
+        # 透传真实客户端 IP
+        proxy_set_header X-Real-IP       $remote_addr;
+        proxy_set_header X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_set_header Host               $host;
+
+        # 限流：每 IP 每秒 20 次请求（突发 30）
+        limit_req zone=api_limit burst=30 nodelay;
+    }
+
+    # ============ WebSocket 反向代理 ============
+    location /ws/ {
+        proxy_pass http://backend_ws;
+
+        # WebSocket 握手必需头
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade    $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+
+        # 超时（保持长连接）
+        proxy_connect_timeout 5s;
+        proxy_send_timeout    300s;
+        proxy_read_timeout    300s;
+
+        # 透传 IP
+        proxy_set_header X-Real-IP       $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host              $host;
+    }
+
+    # ============ 健康检查接口 ============
+    location /nginx-health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+}
+
+# ===================== 健康检查（主动探测后端）=====================
+# 需要 nginx-plus 或开源版配合 nginx_upstream_check_module 第三方模块
+# 以下为开源版替代方案：用 stub_status 暴露 Nginx 状态
+server {
+    listen 127.0.0.1:8080;
+    server_name _;
+    location /nginx_status {
+        stub_status on;
+        allow  127.0.0.1;
+        deny   all;
+    }
+}
+
+# ===================== 限流区域定义 =====================
+# 需在 http {} 块中添加（如直接在 nginx.conf 的 http 块内）：
+#
+# http {
+#     # 限流：10m 内存，每秒 20 次请求
+#     limit_req_zone $binary_remote_addr zone=api_limit:10m rate=20r/s;
+#
+#     # 连接数限制（防并发洪泛）
+#     limit_conn_zone $binary_remote_addr zone=addr:10m;
+#
+#     include conf.d/*.conf;
+# }

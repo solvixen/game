@@ -1,6 +1,6 @@
 <template>
   <div class="line-chart">
-    <div class="chart-header" v-if="title">
+    <div v-if="title" class="chart-header">
       <h3>{{ title }}</h3>
     </div>
     <div ref="chartRef" class="chart-container"></div>
@@ -9,7 +9,7 @@
 
 <script setup>
 import { ref, onMounted, watch, onUnmounted } from 'vue'
-import * as echarts from 'echarts'
+import { init, graphic } from '@/utils/echarts'
 
 const props = defineProps({
   title: {
@@ -31,44 +31,68 @@ let chart = null
 
 const initChart = () => {
   if (!chartRef.value) return
-  
+
   if (chart) {
     chart.dispose()
   }
-  
-  chart = echarts.init(chartRef.value)
-  
+
+  chart = init(chartRef.value)
+
   const labels = props.data?.labels || []
   const datasets = props.data?.datasets || []
-  
+
   const option = {
     tooltip: {
       trigger: 'axis',
       axisPointer: {
-        type: 'shadow'
-      }
+        type: 'cross',
+        label: { backgroundColor: '#ffffff' }
+      },
+      backgroundColor: '#ffffff',
+      borderColor: '#1a56db',
+      textStyle: { color: '#111827' }
     },
     grid: {
       left: '5%',
       right: '5%',
-      bottom: '10%',
+      bottom: '15%',
       top: '15%',
       containLabel: true
     },
     xAxis: {
       type: 'category',
       data: labels,
-      axisLine: { lineStyle: { color: '#4a4a6a' } },
-      axisLabel: { color: '#8a9bb2', fontSize: 11 }
+      axisLine: { lineStyle: { color: '#d1d5db' } },
+      axisLabel: { color: '#6b7280', fontSize: 11 }
     },
     yAxis: {
       type: 'value',
-      axisLine: { lineStyle: { color: '#4a4a6a' } },
-      axisLabel: { color: '#8a9bb2', fontSize: 11 },
-      splitLine: { 
-        lineStyle: { color: '#2a2a3e', type: 'dashed' } 
+      axisLine: { lineStyle: { color: '#d1d5db' } },
+      axisLabel: { color: '#6b7280', fontSize: 11 },
+      splitLine: {
+        lineStyle: { color: '#e5e7eb', type: 'dashed' }
       }
     },
+    dataZoom: [
+      {
+        type: 'inside',
+        start: 0,
+        end: 100,
+        zoomOnMouseWheel: true
+      },
+      {
+        type: 'slider',
+        start: 0,
+        end: 100,
+        height: 20,
+        bottom: 5,
+        borderColor: '#d1d5db',
+        backgroundColor: '#ffffff',
+        fillerColor: 'rgba(26,86,219,0.1)',
+        handleStyle: { color: '#1a56db' },
+        textStyle: { color: '#6b7280' }
+      }
+    ],
     series: datasets.map((dataset, index) => ({
       name: dataset.name || '数据',
       type: 'line',
@@ -76,19 +100,19 @@ const initChart = () => {
       smooth: true,
       symbol: 'circle',
       symbolSize: 6,
-      lineStyle: { 
+      lineStyle: {
         width: 2,
         color: index === 0 ? '#74b9ff' : index === 1 ? '#00b894' : '#e17055'
       },
       areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(116, 185, 255, 0.3)' },
-          { offset: 1, color: 'rgba(116, 185, 255, 0.05)' }
+        color: new graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: 'rgba(26,86,219,0.15)' },
+          { offset: 1, color: 'rgba(26,86,219,0.02)' }
         ])
       }
     }))
   }
-  
+
   chart.setOption(option)
 }
 
@@ -96,7 +120,7 @@ onMounted(() => {
   setTimeout(() => {
     initChart()
   }, 100)
-  
+
   window.addEventListener('resize', handleResize)
 })
 
@@ -106,19 +130,23 @@ const handleResize = () => {
   }
 }
 
-watch(() => props.data, () => {
-  if (chart) {
-    const labels = props.data?.labels || []
-    const datasets = props.data?.datasets || []
-    
-    chart.setOption({
-      xAxis: { data: labels },
-      series: datasets.map((dataset, index) => ({
-        data: dataset.data || []
-      }))
-    })
-  }
-}, { deep: true, immediate: true })
+watch(
+  () => props.data,
+  () => {
+    if (chart) {
+      const labels = props.data?.labels || []
+      const datasets = props.data?.datasets || []
+
+      chart.setOption({
+        xAxis: { data: labels },
+        series: datasets.map((dataset, index) => ({
+          data: dataset.data || []
+        }))
+      })
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
@@ -131,23 +159,23 @@ onUnmounted(() => {
 
 <style scoped>
 .line-chart {
-  background: #16213e;
+  background: #ffffff;
   border-radius: 12px;
   padding: 16px;
   height: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 .chart-header {
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #d1d5db;
 }
 
 .chart-header h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #8a9bb2;
+  color: #6b7280;
   margin: 0;
 }
 

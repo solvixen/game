@@ -1,7 +1,7 @@
 <template>
   <div class="analytics">
     <h1 class="page-title">📊 数据分析</h1>
-    
+
     <!-- 操作栏 -->
     <div class="action-bar">
       <div class="left">
@@ -11,7 +11,7 @@
           <el-radio-button value="month">本月</el-radio-button>
           <el-radio-button value="quarter">本季度</el-radio-button>
         </el-radio-group>
-        
+
         <el-date-picker
           v-model="customRange"
           type="daterange"
@@ -22,7 +22,7 @@
           @change="handleCustomRangeChange"
         />
       </div>
-      
+
       <div class="right">
         <!-- 导出按钮组 -->
         <el-dropdown @command="handleExport">
@@ -37,10 +37,8 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        
-        <el-button @click="refreshData" :icon="Refresh">
-          刷新
-        </el-button>
+
+        <el-button :icon="Refresh" @click="refreshData"> 刷新 </el-button>
       </div>
     </div>
 
@@ -60,20 +58,11 @@
 
     <!-- 图表分析 -->
     <div class="charts-section">
-      <LineChart 
-        title="DAU趋势" 
-        :data="dauData"
-      />
-      
+      <LineChart title="DAU趋势" :data="dauData" />
+
       <div class="charts-row">
-        <LineChart 
-          title="收入趋势" 
-          :data="revenueData"
-        />
-        <LineChart 
-          title="留存率分析" 
-          :data="retentionData"
-        />
+        <LineChart title="收入趋势" :data="revenueData" />
+        <LineChart title="留存率分析" :data="retentionData" />
       </div>
     </div>
 
@@ -82,38 +71,34 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <el-button 
-            type="danger" 
-            size="small" 
+          <el-button
+            type="danger"
+            size="small"
             :disabled="!selectedRows.length"
             @click="deleteSelected"
           >
             批量删除
           </el-button>
-          <span class="selected-info" v-if="selectedRows.length">
+          <span v-if="selectedRows.length" class="selected-info">
             已选择 {{ selectedRows.length }} 项
           </span>
         </div>
-        
+
         <div class="right">
-          <el-button 
-            v-if="selectedRows.length"
-            size="small"
-            @click="exportSelected"
-          >
+          <el-button v-if="selectedRows.length" size="small" @click="exportSelected">
             导出选中项
           </el-button>
         </div>
       </div>
 
       <!-- 表格 -->
-      <el-table 
-        :data="tableData" 
-        style="width: 100%" 
-        stripe
+      <el-table
         ref="tableRef"
-        @selection-change="handleSelectionChange"
         v-loading="loading"
+        :data="tableData"
+        style="width: 100%"
+        stripe
+        @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
         <el-table-column prop="date" label="日期" width="120" sortable />
@@ -133,15 +118,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="revenue" label="收入(元)" sortable>
-          <template #default="{ row }">
-            ¥{{ formatNumber(row.revenue) }}
-          </template>
+          <template #default="{ row }"> ¥{{ formatNumber(row.revenue) }} </template>
         </el-table-column>
         <el-table-column prop="avgDuration" label="平均时长(分钟)" sortable />
         <el-table-column prop="payRate" label="付费率" sortable>
-          <template #default="{ row }">
-            {{ row.payRate }}%
-          </template>
+          <template #default="{ row }"> {{ row.payRate }}% </template>
         </el-table-column>
         <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
@@ -149,7 +130,7 @@
           </template>
         </el-table-column>
       </el-table>
-      
+
       <!-- 分页 -->
       <div class="table-footer">
         <el-pagination
@@ -169,28 +150,28 @@
       <el-form label-width="100px">
         <el-form-item label="导出格式">
           <el-radio-group v-model="exportFormat">
-            <el-radio label="excel">Excel (.xlsx)</el-radio>
-            <el-radio label="csv">CSV (.csv)</el-radio>
-            <el-radio label="pdf">PDF (.pdf)</el-radio>
+            <el-radio value="excel">Excel (.xlsx)</el-radio>
+            <el-radio value="csv">CSV (.csv)</el-radio>
+            <el-radio value="pdf">PDF (.pdf)</el-radio>
           </el-radio-group>
         </el-form-item>
-        
+
         <el-form-item label="包含字段">
           <el-checkbox-group v-model="exportColumns">
-            <el-checkbox v-for="col in allColumns" :key="col.prop" :label="col.prop">
+            <el-checkbox v-for="col in allColumns" :key="col.prop" :value="col.prop">
               {{ col.label }}
             </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        
-        <el-form-item label="时间范围" v-if="exportType === 'all'">
+
+        <el-form-item v-if="exportType === 'all'" label="时间范围">
           <el-radio-group v-model="exportTimeRange">
-            <el-radio label="current">当前页</el-radio>
-            <el-radio label="all">全部数据</el-radio>
+            <el-radio value="current">当前页</el-radio>
+            <el-radio value="all">全部数据</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="exportDialogVisible = false">取消</el-button>
@@ -218,7 +199,7 @@ const selectedRows = ref([])
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
-const tableData = ref([])              // 表格数据（真实）
+const tableData = ref([]) // 表格数据（真实）
 const chartData = ref({ labels: [], dauData: [], revenueData: [] }) // 原始图表数据
 
 // 关键指标（从表格数据计算，若表格为空则显示默认值）
@@ -231,10 +212,14 @@ const stats = computed(() => {
       { title: '付费率', value: '0%', change: 0 }
     ]
   }
-  const avgDau = Math.round(tableData.value.reduce((sum, d) => sum + d.dau, 0) / tableData.value.length)
-  const avgMau = Math.round(tableData.value.reduce((sum, d) => sum + d.mau, 0) / tableData.value.length)
+  const avgDau = Math.round(
+    tableData.value.reduce((sum, d) => sum + d.dau, 0) / tableData.value.length
+  )
+  const avgMau = Math.round(
+    tableData.value.reduce((sum, d) => sum + d.mau, 0) / tableData.value.length
+  )
   const totalRevenue = tableData.value.reduce((sum, d) => sum + d.revenue, 0)
-  const arpu = totalRevenue / (tableData.value.length * (avgDau || 1))  // 粗略ARPU
+  const arpu = totalRevenue / (tableData.value.length * (avgDau || 1)) // 粗略ARPU
   const avgPayRate = tableData.value.reduce((sum, d) => sum + d.payRate, 0) / tableData.value.length
   return [
     { title: 'DAU', value: avgDau.toLocaleString(), change: 0 },
@@ -355,14 +340,16 @@ const deleteSelected = () => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    // 仅为前端演示，实际应调用后端删除接口
-    const ids = selectedRows.value.map(item => item.id)
-    tableData.value = tableData.value.filter(item => !ids.includes(item.id))
-    selectedRows.value = []
-    ElMessage.success('删除成功（演示）')
-    fetchTableData()
-  }).catch(() => {})
+  })
+    .then(() => {
+      // 仅为前端演示，实际应调用后端删除接口
+      const ids = selectedRows.value.map((item) => item.id)
+      tableData.value = tableData.value.filter((item) => !ids.includes(item.id))
+      selectedRows.value = []
+      ElMessage.success('删除成功（演示）')
+      fetchTableData()
+    })
+    .catch(() => {})
 }
 
 const viewDetail = (row) => {
@@ -401,7 +388,7 @@ const confirmExport = () => {
   } else {
     dataToExport = tableData.value
   }
-  const selectedColumns = allColumns.filter(col => exportColumns.value.includes(col.prop))
+  const selectedColumns = allColumns.filter((col) => exportColumns.value.includes(col.prop))
   const formattedData = formatForExport(dataToExport, exportFormatters)
   exportData(
     formattedData,
@@ -424,14 +411,14 @@ onMounted(() => {
 .analytics {
   padding: 24px;
   min-height: 100vh;
-  background: #1a1a2e;
-  color: #fff;
+  background: #f5f5f5;
+  color: #111827;
 }
 
 .page-title {
   font-size: 24px;
   margin: 0 0 24px 0;
-  color: #fff;
+  color: #111827;
 }
 
 .action-bar {
@@ -440,9 +427,9 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 24px;
   padding: 16px 20px;
-  background: #16213e;
+  background: #ffffff;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 .left {
@@ -469,7 +456,7 @@ onMounted(() => {
 }
 
 .stat-label {
-  color: #8a9bb2;
+  color: #6b7280;
   font-size: 14px;
   margin-bottom: 8px;
 }
@@ -477,13 +464,13 @@ onMounted(() => {
 .stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #74b9ff;
+  color: #1a56db;
   margin-bottom: 8px;
 }
 
 .stat-compare {
   font-size: 12px;
-  color: #8a9bb2;
+  color: #6b7280;
 }
 
 .stat-compare .up {
@@ -515,7 +502,7 @@ onMounted(() => {
 
 .selected-info {
   margin-left: 12px;
-  color: #8a9bb2;
+  color: #6b7280;
   font-size: 13px;
 }
 
@@ -527,32 +514,32 @@ onMounted(() => {
 
 /* 表格样式覆盖 */
 :deep(.el-table) {
-  background: #16213e;
-  color: #fff;
+  background: #ffffff;
+  color: #111827;
   border-radius: 8px;
   overflow: hidden;
 }
 
 :deep(.el-table th) {
-  background: #0f3460;
-  color: #fff;
+  background: #e8edf2;
+  color: #111827;
   font-weight: 500;
 }
 
 :deep(.el-table tr) {
-  background: #16213e;
+  background: #ffffff;
 }
 
 :deep(.el-table td) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
-  background: #1a2a4a;
+  background: #eff6ff;
 }
 
 :deep(.el-table__body tr:hover > td) {
-  background: #1e3a5a !important;
+  background: #dbeafe !important;
 }
 
 :deep(.el-checkbox__inner) {
@@ -562,45 +549,45 @@ onMounted(() => {
 
 /* 分页样式 */
 :deep(.el-pagination) {
-  color: #8a9bb2;
+  color: #6b7280;
 }
 
 :deep(.el-pagination button) {
-  background: #16213e;
-  color: #8a9bb2;
+  background: #ffffff;
+  color: #6b7280;
 }
 
 :deep(.el-pager li) {
-  background: #16213e;
-  color: #8a9bb2;
+  background: #ffffff;
+  color: #6b7280;
 }
 
 :deep(.el-pager li.active) {
   background: #74b9ff;
-  color: #fff;
+  color: #111827;
 }
 
 /* 对话框样式 */
 :deep(.el-dialog) {
-  background: #16213e;
+  background: #ffffff;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #d1d5db;
 }
 
 :deep(.el-dialog__title) {
-  color: #fff;
+  color: #111827;
 }
 
 :deep(.el-dialog__body) {
-  color: #fff;
+  color: #111827;
 }
 
 :deep(.el-form-item__label) {
-  color: #8a9bb2;
+  color: #6b7280;
 }
 
 :deep(.el-checkbox__label) {
-  color: #fff;
+  color: #111827;
 }
 
 @media (max-width: 768px) {
@@ -608,16 +595,16 @@ onMounted(() => {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .left {
     width: 100%;
   }
-  
+
   .right {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .charts-row {
     grid-template-columns: 1fr;
   }

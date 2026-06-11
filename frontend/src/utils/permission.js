@@ -10,11 +10,11 @@
  */
 export const hasPermission = (allowedRoles) => {
   const userRole = localStorage.getItem('userRole') || 'viewer'
-  
+
   if (Array.isArray(allowedRoles)) {
     return allowedRoles.includes(userRole)
   }
-  
+
   return allowedRoles === userRole
 }
 

@@ -13,11 +13,11 @@ export const getGameMetrics = () => {
 export const getServerStatus = () => {
   const servers = []
   const regions = ['华北', '华东', '华南', '西南', '海外']
-  
+
   for (let i = 0; i < 5; i++) {
     servers.push({
-      id: `server-${i+1}`,
-      name: `游戏服务器-${i+1}`,
+      id: `server-${i + 1}`,
+      name: `游戏服务器-${i + 1}`,
       region: regions[i],
       status: Math.random() > 0.2 ? 'online' : 'offline',
       players: random(200, 1500),
@@ -26,7 +26,7 @@ export const getServerStatus = () => {
       latency: random(20, 200)
     })
   }
-  
+
   return Promise.resolve(servers)
 }
 

@@ -15,7 +15,7 @@ export const storage = {
       return false
     }
   },
-  
+
   // 获取
   get(key, defaultValue = null) {
     try {
@@ -27,25 +27,25 @@ export const storage = {
       return defaultValue
     }
   },
-  
+
   // 删除
   remove(key) {
     localStorage.removeItem(PREFIX + key)
   },
-  
+
   // 清空
   clear() {
-    Object.keys(localStorage).forEach(key => {
+    Object.keys(localStorage).forEach((key) => {
       if (key.startsWith(PREFIX)) {
         localStorage.removeItem(key)
       }
     })
   },
-  
+
   // 获取所有
   getAll() {
     const items = {}
-    Object.keys(localStorage).forEach(key => {
+    Object.keys(localStorage).forEach((key) => {
       if (key.startsWith(PREFIX)) {
         const originalKey = key.replace(PREFIX, '')
         items[originalKey] = this.get(originalKey)
@@ -69,7 +69,7 @@ export const session = {
       return false
     }
   },
-  
+
   get(key, defaultValue = null) {
     try {
       const serialized = sessionStorage.getItem(PREFIX + key)
@@ -80,13 +80,13 @@ export const session = {
       return defaultValue
     }
   },
-  
+
   remove(key) {
     sessionStorage.removeItem(PREFIX + key)
   },
-  
+
   clear() {
-    Object.keys(sessionStorage).forEach(key => {
+    Object.keys(sessionStorage).forEach((key) => {
       if (key.startsWith(PREFIX)) {
         sessionStorage.removeItem(key)
       }

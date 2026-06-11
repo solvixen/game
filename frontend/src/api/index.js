@@ -7,15 +7,21 @@ const useMock = import.meta.env.VITE_APP_MOCK_ENABLED === 'true'
 
 export const api = {
   // 游戏数据
-  getGameMetrics: () => 
-    useMock ? mockData.getGameMetrics() : gameDataService.getGameMetrics(),
-  
-  getServerStatus: () => 
-    useMock ? mockData.getServerStatus() : gameDataService.getServerStatus(),
-  
-  getPlayerStats: () => 
-    useMock ? mockData.getPlayerStats() : gameDataService.getPlayerStats(),
-  
+  getGameMetrics: () => (useMock ? mockData.getGameMetrics() : gameDataService.getGameMetrics()),
+
+  getServerStatus: () => (useMock ? mockData.getServerStatus() : gameDataService.getServerStatus()),
+
+  getPlayerStats: () => (useMock ? mockData.getPlayerStats() : gameDataService.getPlayerStats()),
+
+  // 用户管理
+  getUserList: () => (useMock ? [] : gameDataService.getUserList()),
+
+  createUser: (data) => (useMock ? Promise.resolve({}) : gameDataService.createUser(data)),
+
+  updateUser: (id, data) => (useMock ? Promise.resolve({}) : gameDataService.updateUser(id, data)),
+
+  deleteUser: (id) => (useMock ? Promise.resolve({}) : gameDataService.deleteUser(id)),
+
   // WebSocket
   websocket
 }

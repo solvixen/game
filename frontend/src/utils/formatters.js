@@ -40,16 +40,16 @@ export const formatTime = (timestamp, format = 'YYYY-MM-DD HH:mm:ss') => {
  */
 export const formatRelativeTime = (timestamp) => {
   if (!timestamp) return ''
-  
+
   const now = dayjs()
   const target = dayjs(timestamp)
   const diffSeconds = now.diff(target, 'second')
-  
+
   if (diffSeconds < 60) return `${diffSeconds}秒前`
   if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}分钟前`
   if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}小时前`
   if (diffSeconds < 2592000) return `${Math.floor(diffSeconds / 86400)}天前`
-  
+
   return target.format('YYYY-MM-DD')
 }
 
@@ -80,11 +80,11 @@ export const formatFileSize = (bytes) => {
  */
 export const formatDuration = (seconds) => {
   if (!seconds) return '00:00'
-  
+
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
   const secs = seconds % 60
-  
+
   if (hours > 0) {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }

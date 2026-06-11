@@ -5,17 +5,20 @@
       <div class="connection-status">
         <span class="status-dot" :class="{ connected: isConnected }"></span>
         {{ isConnected ? '已连接' : '连接中...' }}
+        <span v-if="isConnected" class="ws-latency" :class="latencyClass">
+          🕐 {{ wsLatency }}ms
+        </span>
       </div>
     </div>
 
     <!-- 实时数据流 -->
     <div class="realtime-grid">
-      <RealtimeChart 
+      <RealtimeChart
         title="实时在线玩家"
         :data-stream="() => realtimeData.onlinePlayers"
         :max-points="60"
       />
-      
+
       <div class="metrics-panel">
         <BaseCard title="实时指标">
           <div class="metric-list">
@@ -55,17 +58,13 @@
         <el-table-column prop="players" label="玩家数" />
         <el-table-column label="CPU">
           <template #default="{ row }">
-            <el-progress 
-              :percentage="row.cpu" 
-              :color="cpuColor(row.cpu)"
-              :stroke-width="10"
-            />
+            <el-progress :percentage="row.cpu" :color="cpuColor(row.cpu)" :stroke-width="10" />
           </template>
         </el-table-column>
         <el-table-column label="内存">
           <template #default="{ row }">
-            <el-progress 
-              :percentage="row.memory" 
+            <el-progress
+              :percentage="row.memory"
               :color="memoryColor(row.memory)"
               :stroke-width="10"
             />
@@ -78,14 +77,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGameDataStore } from '@/store'
 import { useWebSocket } from '@/composables/useWebSocket'
+import websocket from '@/api/websocket'
 import BaseCard from '@/components/common/BaseCard.vue'
 import RealtimeChart from '@/components/charts/RealtimeChart.vue'
 
 const store = useGameDataStore()
 const { isConnected, lastMessage } = useWebSocket('gameData', handleNewData)
+
+const wsLatency = ref(0)
+
+const latencyClass = computed(() => {
+  if (wsLatency.value <= 5) return 'latency-good'
+  if (wsLatency.value <= 20) return 'latency-normal'
+  if (wsLatency.value <= 150) return 'latency-slow'
+  return 'latency-bad'
+})
 
 const realtimeData = ref({
   onlinePlayers: 0,
@@ -102,6 +111,7 @@ function handleNewData(payload, servers) {
   if (servers) {
     store.servers = servers
   }
+  wsLatency.value = websocket.latency
 }
 
 const cpuColor = (value) => {
@@ -125,8 +135,8 @@ onMounted(() => {
 .realtime-monitor {
   padding: 24px;
   min-height: 100vh;
-  background: #1a1a2e;
-  color: #fff;
+  background: #f5f5f5;
+  color: #111827;
 }
 
 .header {
@@ -146,7 +156,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: #16213e;
+  background: #ffffff;
   border-radius: 20px;
   font-size: 14px;
 }
@@ -165,9 +175,15 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.3; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .realtime-grid {
@@ -185,7 +201,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #d1d5db;
 }
 
 .metric-item:last-child {
@@ -193,12 +209,50 @@ onMounted(() => {
 }
 
 .metric-item .label {
-  color: #8a9bb2;
+  color: #6b7280;
 }
 
 .metric-item .value {
   font-size: 18px;
   font-weight: 600;
-  color: #74b9ff;
+  color: #1a56db;
+}
+
+/* WebSocket 延迟指示器 */
+.ws-latency {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+
+.latency-good {
+  background: rgba(0, 184, 148, 0.15);
+  color: #00b894;
+}
+
+.latency-normal {
+  background: rgba(253, 203, 110, 0.15);
+  color: #fdcb6e;
+}
+
+.latency-slow {
+  background: rgba(225, 112, 85, 0.15);
+  color: #e17055;
+}
+
+.latency-bad {
+  background: rgba(214, 48, 49, 0.2);
+  color: #d63031;
+  animation: latency-blink 1s infinite;
+}
+
+@keyframes latency-blink {
+  50% {
+    opacity: 0.5;
+  }
 }
 </style>

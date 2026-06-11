@@ -5,12 +5,8 @@
       <h2 class="error-message">无权访问</h2>
       <p class="error-description">您没有权限访问此页面，请联系管理员</p>
       <div class="action-buttons">
-        <el-button type="primary" size="large" @click="goBack">
-          返回上一页
-        </el-button>
-        <el-button size="large" @click="goHome">
-          返回首页
-        </el-button>
+        <el-button type="primary" size="large" @click="goBack"> 返回上一页 </el-button>
+        <el-button size="large" @click="goHome"> 返回首页 </el-button>
       </div>
     </div>
   </div>
@@ -36,8 +32,8 @@ const goHome = () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8edf2 100%);
+  color: #111827;
 }
 
 .content {
@@ -60,7 +56,7 @@ const goHome = () => {
 }
 
 .error-description {
-  color: #8a9bb2;
+  color: #6b7280;
   margin-bottom: 30px;
   font-size: 16px;
 }

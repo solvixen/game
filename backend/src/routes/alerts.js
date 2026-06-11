@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
+const { requireRole } = require('../middleware/auth');
 
 // 获取告警列表（支持分页和级别筛选）
 router.get('/', async (req, res) => {
@@ -46,6 +47,34 @@ router.put('/:id/resolve', async (req, res) => {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: '无效ID' });
         await db.resolveAlert(id);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 批量删除告警（仅管理员）—— 必须放在 /:id 前面！
+router.delete('/batch', requireRole('admin'), async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: '参数错误' });
+        }
+        await db.batchDeleteAlerts(ids);
+        res.json({ success: true, deletedCount: ids.length });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 删除单个告警（仅管理员）
+router.delete('/:id', requireRole('admin'), async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).json({ error: '无效ID' });
+        await db.deleteAlert(id);
         res.json({ success: true });
     } catch (err) {
         console.error(err);

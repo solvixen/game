@@ -47,3 +47,37 @@ INSERT INTO servers (id, name, region, status, players, cpu, memory, latency, la
 ('s4', '游戏服务器-西南1', '西南', 'offline', 0, 0, 0, 0, NOW()),
 ('s5', '游戏服务器-海外1', '海外', 'online', 567, 34, 41, 156, NOW())
 ON DUPLICATE KEY UPDATE name=VALUES(name);
+
+-- 用户表（用于登录认证）
+CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'operator', 'developer', 'viewer') DEFAULT 'viewer',
+    last_login DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 插入默认用户（密码 123456 的 bcrypt 哈希值）
+-- bcrypt hash of '123456'
+INSERT IGNORE INTO users (username, password, role) VALUES
+('admin', '$2b$10$4zT575O6YrL2f/A0xEhayejyF.GtLoZnxIFGDFoEbLcXSzJsYXViS', 'admin'),
+('operator', '$2b$10$4zT575O6YrL2f/A0xEhayejyF.GtLoZnxIFGDFoEbLcXSzJsYXViS', 'operator'),
+('developer', '$2b$10$4zT575O6YrL2f/A0xEhayejyF.GtLoZnxIFGDFoEbLcXSzJsYXViS', 'developer'),
+('viewer', '$2b$10$4zT575O6YrL2f/A0xEhayejyF.GtLoZnxIFGDFoEbLcXSzJsYXViS', 'viewer');
+
+-- 服务器历史快照表（论文第5张表）
+CREATE TABLE IF NOT EXISTS server_history (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    server_id VARCHAR(50) NOT NULL,
+    name VARCHAR(100),
+    region VARCHAR(50),
+    status ENUM('online', 'offline') DEFAULT 'offline',
+    players INT DEFAULT 0,
+    cpu INT DEFAULT 0,
+    memory INT DEFAULT 0,
+    latency INT DEFAULT 0,
+    snapshot_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_server_time (server_id, snapshot_time),
+    INDEX idx_snapshot_time (snapshot_time)
+);

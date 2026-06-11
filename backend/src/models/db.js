@@ -135,6 +135,46 @@ async function batchResolveAlerts(alertIds) {
     await pool.execute(sql, ids);
 }
 
+async function deleteAlert(alertId) {
+    const id = parseInt(alertId);
+    if (isNaN(id)) throw new Error('无效的告警ID');
+    await pool.execute('DELETE FROM alerts WHERE id = ?', [id]);
+}
+
+async function batchDeleteAlerts(alertIds) {
+    if (!alertIds || !Array.isArray(alertIds) || alertIds.length === 0) return;
+    const ids = alertIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+    if (ids.length === 0) return;
+    const placeholders = ids.map(() => '?').join(',');
+    const sql = `DELETE FROM alerts WHERE id IN (${placeholders})`;
+    await pool.execute(sql, ids);
+}
+
+// ==================== 指标统计 ====================
+async function getMetricsStats() {
+    // 游戏指标统计
+    const [metricRows] = await pool.execute(
+        `SELECT COUNT(*) as totalRecords, AVG(online_players) as avgOnlinePlayers,
+                AVG(revenue) as avgRevenue, AVG(avg_latency) as avgLatency
+         FROM game_metrics`
+    );
+    // 服务器最高CPU
+    const [serverRows] = await pool.execute(`SELECT MAX(cpu) as maxCpu FROM servers WHERE status = 'online'`);
+    // 告警统计
+    const [alertRows] = await pool.execute(`SELECT COUNT(*) as totalAlerts FROM alerts`);
+    const [pendingRows] = await pool.execute(`SELECT COUNT(*) as pendingAlerts FROM alerts WHERE status = 'pending'`);
+
+    return {
+        totalRecords: metricRows[0].totalRecords || 0,
+        avgOnlinePlayers: parseFloat(metricRows[0].avgOnlinePlayers) || 0,
+        avgRevenue: parseFloat(metricRows[0].avgRevenue) || 0,
+        avgLatency: parseFloat(metricRows[0].avgLatency) || 0,
+        maxCpu: serverRows[0].maxCpu || 0,
+        totalAlerts: alertRows[0].totalAlerts || 0,
+        pendingAlerts: pendingRows[0].pendingAlerts || 0,
+    };
+}
+
 // ==================== 用户相关（可选，用于登录） ====================
 async function findUserByUsername(username) {
     const [rows] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
@@ -143,6 +183,72 @@ async function findUserByUsername(username) {
 
 async function updateUserLoginTime(userId) {
     await pool.execute('UPDATE users SET last_login = NOW() WHERE id = ?', [userId]);
+}
+
+// ==================== 服务器历史快照 ====================
+async function saveServerHistory(servers) {
+    for (const server of servers) {
+        const sql = `INSERT INTO server_history (server_id, name, region, status, players, cpu, memory, latency)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        await pool.execute(sql, [
+            server.id, server.name, server.region,
+            server.status, server.players,
+            server.cpu, server.memory, server.latency
+        ]);
+    }
+}
+
+async function getServerHistory(serverId, limit = 60) {
+    let sql = 'SELECT * FROM server_history WHERE 1=1';
+    const params = [];
+    if (serverId) {
+        sql += ' AND server_id = ?';
+        params.push(serverId);
+    }
+    sql += ' ORDER BY snapshot_time DESC LIMIT ?';
+    params.push(parseInt(limit) || 60);
+    const [rows] = await pool.query(sql, params);
+    return rows;
+}
+
+// ==================== 用户管理 CRUD ====================
+async function getAllUsers() {
+    const [rows] = await pool.execute(
+        'SELECT id, username, role, last_login, created_at FROM users ORDER BY id ASC'
+    );
+    return rows;
+}
+
+async function createUser(username, password, role = 'viewer') {
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const sql = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)';
+    const [result] = await pool.execute(sql, [username, hashedPassword, role]);
+    return result.insertId;
+}
+
+async function updateUser(userId, updates) {
+    const fields = [];
+    const params = [];
+    if (updates.password !== undefined) {
+        const bcrypt = require('bcryptjs');
+        fields.push('password = ?');
+        params.push(bcrypt.hashSync(updates.password, 10));
+    }
+    if (updates.role !== undefined) {
+        fields.push('role = ?');
+        params.push(updates.role);
+    }
+    if (fields.length === 0) return;
+    params.push(userId);
+    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+    await pool.execute(sql, params);
+}
+
+async function deleteUser(userId) {
+    const id = parseInt(userId);
+    if (isNaN(id)) throw new Error('无效的用户ID');
+    await pool.execute('DELETE FROM users WHERE id = ?', [id]);
 }
 
 // ==================== 导出所有方法 ====================
@@ -154,6 +260,7 @@ module.exports = {
     saveMetrics,
     getLatestMetrics,
     getHistoryMetrics,
+    getMetricsStats,
     // 服务器
     getAllServers,
     saveServerStatus,
@@ -163,8 +270,17 @@ module.exports = {
     getAlertsCount,
     resolveAlert,
     batchResolveAlerts,
-    // 用户
+    deleteAlert,
+    batchDeleteAlerts,
+    // 服务器历史
+    saveServerHistory,
+    getServerHistory,
+    // 用户（登录）
     findUserByUsername,
     updateUserLoginTime,
-    
+    // 用户（管理）
+    getAllUsers,
+    createUser,
+    updateUser,
+    deleteUser,
 };

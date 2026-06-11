@@ -4,7 +4,7 @@
       <h3>服务器状态</h3>
       <span class="server-count">{{ onlineCount }}/{{ totalCount }} 在线</span>
     </div>
-    
+
     <div class="server-list">
       <div v-for="server in servers" :key="server.id" class="server-item">
         <div class="server-info">
@@ -17,12 +17,12 @@
             <span>{{ server.status === 'online' ? '在线' : '离线' }}</span>
           </div>
         </div>
-        
+
         <div v-if="server.status === 'online'" class="server-metrics">
           <div class="metric">
             <span class="metric-label">👥 {{ server.players }}</span>
-            <el-progress 
-              :percentage="server.cpu" 
+            <el-progress
+              :percentage="server.cpu"
               :color="cpuColor(server.cpu)"
               :stroke-width="6"
               :show-text="false"
@@ -34,10 +34,8 @@
             <span>延迟: {{ server.latency }}ms</span>
           </div>
         </div>
-        
-        <div v-else class="offline-message">
-          服务器当前不可用
-        </div>
+
+        <div v-else class="offline-message">服务器当前不可用</div>
       </div>
     </div>
   </div>
@@ -54,7 +52,7 @@ const props = defineProps({
 })
 
 const onlineCount = computed(() => {
-  return props.servers.filter(s => s.status === 'online').length
+  return props.servers.filter((s) => s.status === 'online').length
 })
 
 const totalCount = computed(() => {
@@ -70,10 +68,10 @@ const cpuColor = (value) => {
 
 <style scoped>
 .server-status-card {
-  background: #16213e;
+  background: #ffffff;
   border-radius: 12px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #e5e7eb;
   height: 100%;
 }
 
@@ -83,13 +81,13 @@ const cpuColor = (value) => {
   align-items: center;
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #d1d5db;
 }
 
 .card-header h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #8a9bb2;
+  color: #6b7280;
   margin: 0;
 }
 
@@ -108,7 +106,7 @@ const cpuColor = (value) => {
 
 .server-item {
   padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 .server-item:last-child {
@@ -128,7 +126,7 @@ const cpuColor = (value) => {
 
 .server-region {
   font-size: 11px;
-  color: #8a9bb2;
+  color: #6b7280;
   margin-left: 8px;
   background: rgba(138, 155, 178, 0.1);
   padding: 2px 6px;
@@ -163,7 +161,7 @@ const cpuColor = (value) => {
 
 .metric-label {
   font-size: 12px;
-  color: #8a9bb2;
+  color: #6b7280;
   display: block;
   margin-bottom: 2px;
 }
@@ -172,7 +170,7 @@ const cpuColor = (value) => {
   display: flex;
   gap: 12px;
   font-size: 11px;
-  color: #8a9bb2;
+  color: #6b7280;
   margin-top: 4px;
 }
 

@@ -7,46 +7,58 @@
       <div class="login-header">
         <div class="logo-icon">
           <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M24 4L6 14v20l18 10 18-10V14L24 4z" stroke="#74b9ff" stroke-width="2" fill="rgba(116,185,255,0.1)"/>
-            <circle cx="24" cy="22" r="8" stroke="#a29bfe" stroke-width="2" fill="rgba(162,155,254,0.15)"/>
-            <path d="M20 32l-4 8M28 32l4 8M24 30v10" stroke="#74b9ff" stroke-width="2" stroke-linecap="round"/>
+            <path
+              d="M24 4L6 14v20l18 10 18-10V14L24 4z"
+              stroke="#74b9ff"
+              stroke-width="2"
+              fill="rgba(116,185,255,0.1)"
+            />
+            <circle
+              cx="24"
+              cy="22"
+              r="8"
+              stroke="#a29bfe"
+              stroke-width="2"
+              fill="rgba(162,155,254,0.15)"
+            />
+            <path
+              d="M20 32l-4 8M28 32l4 8M24 30v10"
+              stroke="#74b9ff"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
         </div>
         <h2 class="login-title">游戏数据实时监控系统</h2>
         <p class="login-subtitle">Game Data Real-time Monitoring</p>
       </div>
-      
-      <el-form 
+
+      <el-form
         ref="formRef"
-        :model="form" 
+        :model="form"
         :rules="rules"
         label-width="0"
         @submit.prevent="handleLogin"
       >
         <el-form-item prop="username">
-          <el-input 
-            v-model="form.username" 
-            placeholder="用户名"
-            size="large"
-            prefix-icon="User"
-          />
+          <el-input v-model="form.username" placeholder="用户名" size="large" prefix-icon="User" />
         </el-form-item>
-        
+
         <el-form-item prop="password">
-          <el-input 
-            v-model="form.password" 
-            type="password" 
+          <el-input
+            v-model="form.password"
+            type="password"
             placeholder="密码"
             size="large"
             prefix-icon="Lock"
             show-password
           />
         </el-form-item>
-        
+
         <el-form-item>
-          <el-button 
-            type="primary" 
-            size="large" 
+          <el-button
+            type="primary"
+            size="large"
             :loading="loading"
             class="login-btn"
             @click="handleLogin"
@@ -55,7 +67,7 @@
           </el-button>
         </el-form-item>
       </el-form>
-      
+
       <div class="demo-account">
         <p class="demo-title">测试账号</p>
         <p><el-tag size="small" type="success">管理员</el-tag> admin / 123456</p>
@@ -71,6 +83,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import httpClient from '@/api/httpClient'
 
 const router = useRouter()
 const formRef = ref(null)
@@ -83,49 +96,48 @@ const form = ref({
 })
 
 const rules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
   ]
 }
 
-// 测试用户列表
-const users = [
-  { username: 'admin', password: '123456', role: 'admin', name: '管理员' },
-  { username: 'operator', password: '123456', role: 'operator', name: '运营人员' },
-  { username: 'developer', password: '123456', role: 'developer', name: '开发人员' },
-  { username: 'viewer', password: '123456', role: 'viewer', name: '观察员' }
-]
-
 const handleLogin = async () => {
   if (!formRef.value) return
-  
+
   await formRef.value.validate(async (valid) => {
     if (valid) {
       loading.value = true
-      
-      const user = users.find(u => 
-        u.username === form.value.username && 
-        u.password === form.value.password
-      )
-      
-      setTimeout(() => {
-        if (user) {
-          localStorage.setItem('token', 'mock-token-' + Date.now())
-          localStorage.setItem('userRole', user.role)
-          localStorage.setItem('userName', user.name)
-          localStorage.setItem('username', user.username)
-          
-          ElMessage.success(`欢迎 ${user.name}`)
-          router.push('/')
-        } else {
-          ElMessage.error('用户名或密码错误')
+
+      try {
+        // 调用后端 JWT 登录接口
+        const res = await httpClient.post('/auth/login', {
+          username: form.value.username,
+          password: form.value.password
+        })
+
+        // 存储 JWT 令牌和用户信息
+        localStorage.setItem('token', res.token)
+        localStorage.setItem('userRole', res.user.role)
+        localStorage.setItem('userName', res.user.username)
+        localStorage.setItem('username', res.user.username)
+
+        // 角色中文映射
+        const roleMap = {
+          admin: '管理员',
+          operator: '运营人员',
+          developer: '开发人员',
+          viewer: '观察员'
         }
+        ElMessage.success(`欢迎 ${roleMap[res.user.role] || res.user.username}`)
+        router.push('/')
+      } catch (err) {
+        const msg = err.response?.data?.error || err.message || '登录失败'
+        ElMessage.error(msg)
+      } finally {
         loading.value = false
-      }, 1000)
+      }
     }
   })
 }
@@ -137,7 +149,7 @@ const initParticles = () => {
   const canvas = particleCanvas.value
   if (!canvas) return
   const ctx = canvas.getContext('2d')
-  
+
   const resize = () => {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
@@ -160,8 +172,12 @@ const initParticles = () => {
     })
   }
 
-  let mouseX = -1000, mouseY = -1000
-  const onMouseMove = (e) => { mouseX = e.clientX; mouseY = e.clientY }
+  let mouseX = -1000,
+    mouseY = -1000
+  const onMouseMove = (e) => {
+    mouseX = e.clientX
+    mouseY = e.clientY
+  }
   window.addEventListener('mousemove', onMouseMove)
 
   const draw = () => {
@@ -186,7 +202,7 @@ const initParticles = () => {
     }
 
     // 绘制粒子
-    particles.forEach(p => {
+    particles.forEach((p) => {
       // 鼠标吸引效果
       const dx = mouseX - p.x
       const dy = mouseY - p.y
@@ -236,7 +252,7 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8edf2 100%);
   position: relative;
   overflow: hidden;
 }
@@ -253,11 +269,12 @@ onUnmounted(() => {
 .login-card {
   width: 420px;
   padding: 40px;
-  background: rgba(22, 33, 62, 0.85);
+  background: rgba(240, 244, 255, 0.9);
   backdrop-filter: blur(20px);
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-              0 0 80px rgba(116, 185, 255, 0.05);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 80px rgba(116, 185, 255, 0.05);
   border: 1px solid rgba(116, 185, 255, 0.15);
   z-index: 1;
   animation: cardFadeIn 0.8s ease-out;
@@ -292,12 +309,17 @@ onUnmounted(() => {
 }
 
 @keyframes logoFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .login-title {
-  color: #fff;
+  color: #111827;
   font-size: 22px;
   margin: 0 0 8px;
   font-weight: 700;
@@ -315,7 +337,7 @@ onUnmounted(() => {
 
 :deep(.el-input__wrapper) {
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #e5e7eb;
   box-shadow: none;
   border-radius: 10px;
   transition: all 0.3s;
@@ -331,7 +353,7 @@ onUnmounted(() => {
 }
 
 :deep(.el-input__inner) {
-  color: #fff;
+  color: #111827;
 }
 
 :deep(.el-input__prefix) {
@@ -362,7 +384,7 @@ onUnmounted(() => {
 .demo-account {
   margin-top: 28px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid #e5e7eb;
   color: #5a6a80;
   font-size: 13px;
 }
@@ -370,7 +392,7 @@ onUnmounted(() => {
 .demo-title {
   margin-bottom: 10px;
   font-weight: 600;
-  color: #8a9bb2;
+  color: #6b7280;
   font-size: 13px;
 }
 

@@ -6,7 +6,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import * as echarts from 'echarts'
+import { init, graphic } from '@/utils/echarts'
 import BaseCard from '../common/BaseCard.vue'
 
 const props = defineProps({
@@ -28,9 +28,9 @@ const data = ref([])
 
 const initChart = () => {
   if (!chartRef.value) return
-  
-  chart = echarts.init(chartRef.value)
-  
+
+  chart = init(chartRef.value)
+
   const option = {
     tooltip: { trigger: 'axis' },
     grid: {
@@ -42,29 +42,31 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      axisLine: { lineStyle: { color: '#4a4a6a' } },
-      axisLabel: { color: '#8a9bb2' }
+      axisLine: { lineStyle: { color: '#d1d5db' } },
+      axisLabel: { color: '#6b7280' }
     },
     yAxis: {
       type: 'value',
-      axisLine: { lineStyle: { color: '#4a4a6a' } },
-      axisLabel: { color: '#8a9bb2' },
-      splitLine: { lineStyle: { color: '#2a2a3e' } }
+      axisLine: { lineStyle: { color: '#d1d5db' } },
+      axisLabel: { color: '#6b7280' },
+      splitLine: { lineStyle: { color: '#e5e7eb' } }
     },
-    series: [{
-      data: [],
-      type: 'line',
-      smooth: true,
-      lineStyle: { color: '#74b9ff', width: 2 },
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(116, 185, 255, 0.3)' },
-          { offset: 1, color: 'rgba(116, 185, 255, 0.05)' }
-        ])
+    series: [
+      {
+        data: [],
+        type: 'line',
+        smooth: true,
+        lineStyle: { color: '#74b9ff', width: 2 },
+        areaStyle: {
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(26,86,219,0.15)' },
+            { offset: 1, color: 'rgba(26,86,219,0.02)' }
+          ])
+        }
       }
-    }]
+    ]
   }
-  
+
   chart.setOption(option)
   startUpdate()
 }
@@ -73,16 +75,16 @@ const startUpdate = () => {
   timer = setInterval(() => {
     const newValue = props.dataStream()
     const time = new Date().toLocaleTimeString()
-    
+
     data.value.push({ time, value: newValue })
-    
+
     if (data.value.length > props.maxPoints) {
       data.value.shift()
     }
-    
+
     chart.setOption({
-      xAxis: { data: data.value.map(d => d.time) },
-      series: [{ data: data.value.map(d => d.value) }]
+      xAxis: { data: data.value.map((d) => d.time) },
+      series: [{ data: data.value.map((d) => d.value) }]
     })
   }, 1000)
 }

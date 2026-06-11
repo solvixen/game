@@ -8,7 +8,7 @@ dayjs.locale('zh-cn')
  */
 export const getDateRange = (type) => {
   const now = dayjs()
-  
+
   switch (type) {
     case 'today':
       return {
@@ -55,7 +55,7 @@ export const getRelativeTimeDesc = (timestamp) => {
   const now = dayjs()
   const target = dayjs(timestamp)
   const diffMinutes = now.diff(target, 'minute')
-  
+
   if (diffMinutes < 1) return '刚刚'
   if (diffMinutes < 60) return `${diffMinutes}分钟前`
   if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}小时前`
@@ -70,12 +70,12 @@ export const getTimeAxisLabels = (start, end, count = 24) => {
   const endTime = dayjs(end)
   const diff = endTime.diff(startTime, 'hour')
   const interval = Math.max(1, Math.floor(diff / (count - 1)))
-  
+
   const labels = []
   for (let i = 0; i < count; i++) {
     const time = startTime.add(i * interval, 'hour')
     labels.push(time.format('HH:mm'))
   }
-  
+
   return labels
 }

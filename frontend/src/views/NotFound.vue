@@ -4,9 +4,7 @@
       <h1 class="error-code">404</h1>
       <h2 class="error-message">页面不存在</h2>
       <p class="error-description">您访问的页面可能已被移除或暂时不可用</p>
-      <el-button type="primary" size="large" @click="goHome">
-        返回首页
-      </el-button>
+      <el-button type="primary" size="large" @click="goHome"> 返回首页 </el-button>
     </div>
   </div>
 </template>
@@ -27,8 +25,8 @@ const goHome = () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8edf2 100%);
+  color: #111827;
 }
 
 .content {
@@ -38,7 +36,7 @@ const goHome = () => {
 .error-code {
   font-size: 120px;
   font-weight: 700;
-  color: #74b9ff;
+  color: #1a56db;
   margin: 0;
   line-height: 1;
   text-shadow: 0 0 20px rgba(116, 185, 255, 0.5);
@@ -50,7 +48,7 @@ const goHome = () => {
 }
 
 .error-description {
-  color: #8a9bb2;
+  color: #6b7280;
   margin-bottom: 30px;
 }
 </style>

@@ -9,13 +9,13 @@ export function useRealtimeData(initialData = {}) {
   const { lastMessage } = useWebSocket('gameData', (newData) => {
     // 更新当前数据
     data.value = { ...data.value, ...newData }
-    
+
     // 保存历史记录
     history.value.push({
       timestamp: Date.now(),
       ...newData
     })
-    
+
     // 限制历史记录长度
     if (history.value.length > maxHistory) {
       history.value.shift()
@@ -23,7 +23,7 @@ export function useRealtimeData(initialData = {}) {
   })
 
   const getHistory = (key) => {
-    return history.value.map(item => ({
+    return history.value.map((item) => ({
       time: item.timestamp,
       value: item[key]
     }))

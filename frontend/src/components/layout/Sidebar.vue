@@ -4,21 +4,25 @@
       <h2>🎮 游戏监控</h2>
       <span class="version">v1.0.0</span>
     </div>
-    
+
     <el-menu
       :default-active="activeMenu"
       class="sidebar-menu"
       :collapse="isCollapse"
-      background-color="#16213e"
-      text-color="#8a9bb2"
-      active-text-color="#74b9ff"
+      background-color="#ffffff"
+      text-color="#374151"
+      active-text-color="#1a56db"
       router
     >
       <template v-for="item in visibleMenuItems" :key="item.index">
         <el-menu-item :index="item.index">
           <el-icon><component :is="item.icon" /></el-icon>
           <span>{{ item.title }}</span>
-          <el-badge v-if="item.badge !== undefined && item.badge !== 0" :value="item.badge" class="badge" />
+          <el-badge
+            v-if="item.badge !== undefined && item.badge !== 0"
+            :value="item.badge"
+            class="badge"
+          />
         </el-menu-item>
       </template>
     </el-menu>
@@ -30,12 +34,12 @@
           <Expand v-else />
         </el-icon>
       </div>
-      
+
       <div class="user-info">
         <el-avatar :size="32" :src="userAvatar" class="user-avatar">
           {{ userInitial }}
         </el-avatar>
-        <div class="user-details" v-if="!isCollapse">
+        <div v-if="!isCollapse" class="user-details">
           <div class="user-name">{{ userName }}</div>
           <div class="user-role" :class="userRole">{{ roleName }}</div>
         </div>
@@ -47,7 +51,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Monitor, DataLine, PieChart, Warning, Fold, Expand } from '@element-plus/icons-vue'
+import { Monitor, DataLine, PieChart, Warning, User, Fold, Expand } from '@element-plus/icons-vue'
 import { useGameDataStore } from '@/store'
 
 const route = useRoute()
@@ -63,17 +67,28 @@ const activeMenu = computed(() => route.path)
 
 // 全量菜单项（含角色权限）
 const allMenuItems = [
-  { index: '/',          title: '仪表板',   icon: Monitor,   roles: ['admin', 'operator', 'developer', 'viewer'] },
-  { index: '/realtime',  title: '实时监控', icon: DataLine,  roles: ['admin', 'operator', 'developer'] },
-  { index: '/analytics', title: '数据分析', icon: PieChart,  roles: ['admin', 'operator'] },
-  { index: '/alerts',    title: '告警管理', icon: Warning,   roles: ['admin', 'operator', 'developer'] },
+  {
+    index: '/',
+    title: '仪表板',
+    icon: Monitor,
+    roles: ['admin', 'operator', 'developer', 'viewer']
+  },
+  {
+    index: '/realtime',
+    title: '实时监控',
+    icon: DataLine,
+    roles: ['admin', 'operator', 'developer']
+  },
+  { index: '/analytics', title: '数据分析', icon: PieChart, roles: ['admin', 'operator'] },
+  { index: '/alerts', title: '告警管理', icon: Warning, roles: ['admin', 'operator', 'developer'] },
+  { index: '/users', title: '用户管理', icon: User, roles: ['admin'] }
 ]
 
 // 根据角色过滤可见菜单
 const visibleMenuItems = computed(() => {
   return allMenuItems
-    .filter(item => item.roles.includes(userRole.value))
-    .map(item => {
+    .filter((item) => item.roles.includes(userRole.value))
+    .map((item) => {
       let badge = undefined
       if (item.index === '/analytics' && hasNewData.value) badge = '新'
       if (item.index === '/alerts') badge = unreadAlerts.value
@@ -106,9 +121,11 @@ const roleName = computed(() => {
 const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value
   // 触发自定义事件，通知主内容区域调整边距
-  window.dispatchEvent(new CustomEvent('sidebar-collapse', { 
-    detail: { collapsed: isCollapse.value } 
-  }))
+  window.dispatchEvent(
+    new CustomEvent('sidebar-collapse', {
+      detail: { collapsed: isCollapse.value }
+    })
+  )
 }
 
 // 模拟实时更新未读告警
@@ -131,19 +148,18 @@ onUnmounted(() => {
 .sidebar {
   width: 240px;
   height: 100vh;
-  background: linear-gradient(180deg, #16213e 0%, #0f3460 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border-right: 1px solid #d1d5db;
   position: fixed;
   left: 0;
   top: 0;
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
   z-index: 1000;
 }
 
-/* 折叠状态 */
 .sidebar.collapsed {
   width: 64px;
 }
@@ -151,7 +167,7 @@ onUnmounted(() => {
 .logo {
   padding: 20px;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,7 +176,7 @@ onUnmounted(() => {
 }
 
 .logo h2 {
-  color: #74b9ff;
+  color: #1a56db;
   margin: 0;
   font-size: 18px;
   font-weight: 600;
@@ -171,8 +187,8 @@ onUnmounted(() => {
 
 .version {
   font-size: 10px;
-  color: #8a9bb2;
-  background: rgba(138, 155, 178, 0.1);
+  color: #6b7280;
+  background: #f3f4f6;
   padding: 2px 6px;
   border-radius: 10px;
   white-space: nowrap;
@@ -187,7 +203,6 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* 菜单样式 */
 .sidebar-menu {
   flex: 1;
   border-right: none !important;
@@ -211,7 +226,7 @@ onUnmounted(() => {
   top: 0;
   bottom: 0;
   width: 0;
-  background: linear-gradient(90deg, rgba(116, 185, 255, 0.15) 0%, transparent 100%);
+  background: rgba(26, 86, 219, 0.08);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 10px;
 }
@@ -222,17 +237,18 @@ onUnmounted(() => {
 
 .sidebar-menu :deep(.el-menu-item:hover) {
   background: transparent !important;
-  color: #fff;
+  color: #1a56db;
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active) {
-  background: linear-gradient(90deg, rgba(116, 185, 255, 0.2) 0%, transparent 100%) !important;
-  color: #74b9ff;
+  background: rgba(26, 86, 219, 0.1) !important;
+  color: #1a56db;
+  font-weight: 600;
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active::before) {
   width: 100%;
-  background: linear-gradient(90deg, rgba(116, 185, 255, 0.1) 0%, transparent 100%);
+  background: rgba(26, 86, 219, 0.06);
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active::after) {
@@ -242,17 +258,17 @@ onUnmounted(() => {
   top: 15%;
   bottom: 15%;
   width: 3px;
-  background: #74b9ff;
+  background: #1a56db;
   border-radius: 0 3px 3px 0;
   animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
-  from { 
+  from {
     opacity: 0;
     transform: scaleY(0);
   }
-  to { 
+  to {
     opacity: 1;
     transform: scaleY(1);
   }
@@ -272,7 +288,6 @@ onUnmounted(() => {
   transition: opacity 0.2s;
 }
 
-/* 折叠状态下的菜单 */
 .sidebar.collapsed .sidebar-menu :deep(.el-menu-item span) {
   opacity: 0;
   width: 0;
@@ -283,20 +298,13 @@ onUnmounted(() => {
   margin-right: 0;
 }
 
-/* 徽章样式 */
 .badge {
   margin-left: auto;
   margin-right: 8px;
-  animation: badgePulse 2s infinite;
-}
-
-@keyframes badgePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
 }
 
 :deep(.el-badge__content) {
-  background: linear-gradient(135deg, #00b894, #00cec9);
+  background: #e02424;
   border: none;
   color: #fff;
   font-size: 10px;
@@ -309,10 +317,9 @@ onUnmounted(() => {
   transform: translateY(-50%) translateX(0);
 }
 
-/* 底部区域 */
 .sidebar-footer {
   padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid #e5e7eb;
   transition: all 0.3s;
 }
 
@@ -323,16 +330,16 @@ onUnmounted(() => {
   height: 34px;
   width: 34px;
   margin: 0 auto 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #f3f4f6;
   border-radius: 8px;
   cursor: pointer;
-  color: #8a9bb2;
+  color: #6b7280;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .collapse-btn:hover {
-  background: rgba(116, 185, 255, 0.15);
-  color: #74b9ff;
+  background: #dbeafe;
+  color: #1a56db;
   transform: scale(1.08);
 }
 
@@ -345,17 +352,18 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: #f9fafb;
   border-radius: 10px;
+  border: 1px solid #e5e7eb;
   transition: background 0.3s;
 }
 
 .user-info:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #f3f4f6;
 }
 
 .user-avatar {
-  background: linear-gradient(135deg, #74b9ff, #a29bfe);
+  background: linear-gradient(135deg, #1a56db, #7c3aed);
   color: #fff;
   font-weight: 600;
   flex-shrink: 0;
@@ -374,7 +382,7 @@ onUnmounted(() => {
 .user-name {
   font-size: 13px;
   font-weight: 500;
-  color: #fff;
+  color: #111827;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -390,26 +398,25 @@ onUnmounted(() => {
 }
 
 .user-role.admin {
-  background: rgba(225, 112, 85, 0.15);
-  color: #e17055;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .user-role.operator {
-  background: rgba(0, 184, 148, 0.15);
-  color: #00b894;
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .user-role.developer {
-  background: rgba(253, 203, 110, 0.15);
-  color: #fdcb6e;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .user-role.viewer {
-  background: rgba(138, 155, 178, 0.15);
-  color: #8a9bb2;
+  background: #f3f4f6;
+  color: #374151;
 }
 
-/* 折叠状态下的底部 */
 .sidebar.collapsed .user-details {
   opacity: 0;
   width: 0;

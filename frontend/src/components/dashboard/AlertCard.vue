@@ -71,7 +71,7 @@ const formatTime = (timestamp) => {
 .alert-type {
   font-size: 12px;
   font-weight: 600;
-  color: #8a9bb2;
+  color: #6b7280;
 }
 
 .alert-time {
@@ -86,6 +86,6 @@ const formatTime = (timestamp) => {
 
 .alert-value {
   font-size: 12px;
-  color: #8a9bb2;
+  color: #6b7280;
 }
 </style>

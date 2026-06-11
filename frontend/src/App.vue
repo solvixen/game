@@ -2,14 +2,17 @@
   <div id="app" :class="['app', themeClass]">
     <!-- 侧边栏（登录页不显示） -->
     <Sidebar v-if="showSidebar" :class="{ collapsed: isSidebarCollapsed }" />
-    
+
     <!-- 主内容区域 -->
-    <div class="main-content" :class="{ 
-      'with-sidebar': showSidebar,
-      'sidebar-collapsed': isSidebarCollapsed 
-    }">
+    <div
+      class="main-content"
+      :class="{
+        'with-sidebar': showSidebar,
+        'sidebar-collapsed': isSidebarCollapsed
+      }"
+    >
       <!-- 顶部导航栏 -->
-      <div class="top-nav" v-if="showSidebar">
+      <div v-if="showSidebar" class="top-nav">
         <div class="nav-left">
           <el-breadcrumb separator="/">
             <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
@@ -112,7 +115,9 @@ onUnmounted(() => {
 /* 主内容区域 */
 .main-content {
   min-height: 100vh;
-  transition: margin-left 0.3s ease, width 0.3s ease;
+  transition:
+    margin-left 0.3s ease,
+    width 0.3s ease;
 }
 
 .main-content.with-sidebar {
@@ -196,16 +201,16 @@ onUnmounted(() => {
     margin-left: 0;
     width: 100%;
   }
-  
+
   .main-content.with-sidebar.sidebar-collapsed {
     margin-left: 0;
     width: 100%;
   }
-  
+
   .sidebar {
     transform: translateX(-100%);
   }
-  
+
   .sidebar.collapsed {
     transform: translateX(0);
   }

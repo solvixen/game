@@ -1,5 +1,5 @@
 <template>
-  <div class="stats-card" :class="[themeClass, { 'hoverable': hoverable }]">
+  <div class="stats-card" :class="[themeClass, { hoverable: hoverable }]">
     <div class="stats-header">
       <div class="stats-icon">
         <span>{{ icon }}</span>
@@ -14,7 +14,11 @@
         </span>
       </div>
       <div v-if="subtitle" class="stats-subtitle">{{ subtitle }}</div>
-      <div v-if="change" class="stats-change" :class="{ positive: change > 0, negative: change < 0 }">
+      <div
+        v-if="change"
+        class="stats-change"
+        :class="{ positive: change > 0, negative: change < 0 }"
+      >
         {{ change > 0 ? '+' : '' }}{{ change }}% 较昨日
       </div>
     </div>
@@ -125,7 +129,7 @@ const formattedValue = computed(() => {
   background: v-bind('config.gradient');
   border-radius: 14px;
   padding: 20px;
-  color: #fff;
+  color: #111827;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   border: 1px solid v-bind('config.borderColor');
@@ -161,7 +165,7 @@ const formattedValue = computed(() => {
 .stats-header h3 {
   font-size: 14px;
   font-weight: 500;
-  color: #8a9bb2;
+  color: #6b7280;
   margin: 0;
 }
 
@@ -202,7 +206,7 @@ const formattedValue = computed(() => {
   color: #6c7a8a;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  border: 1px solid #e5e7eb;
 }
 
 .stats-change.positive {
